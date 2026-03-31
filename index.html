@@ -573,8 +573,26 @@
             setInterval(() => { renderPosts(); }, 60000);
         }
 
-        // Analytics ping
-        try { fetch('https://api.counterapi.dev/v1/felt-that/visits/up'); } catch(e) {}
+        // Analytics tracking - record visit to localStorage for dashboard
+        (function trackVisit() {
+            const STORAGE_KEY = 'feltthat_analytics';
+            let data = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{"visits":[],"posts":[],"dailyVisits":{}}');
+            const now = Date.now();
+            const today = new Date().toISOString().split('T')[0];
+            
+            // Record visit
+            data.visits.push(now);
+            data.dailyVisits[today] = (data.dailyVisits[today] || 0) + 1;
+            
+            // Keep only last 90 days
+            const cutoff = now - (90 * 86400000);
+            data.visits = data.visits.filter(t => t > cutoff);
+            
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+            
+            // Also ping remote counter for cross-device tracking
+            try { fetch('https://api.counterapi.dev/v1/felt-that/visits/up'); } catch(e) {}
+        })();
     </script>
 </body>
 </html>
