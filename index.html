@@ -71,6 +71,16 @@
             gap: 0.75rem;
         }
 
+        .header-notice{
+            font-size: 0.6875rem;
+            color: var(--text-muted);
+        }
+
+        .header-notice span{
+            color: var(--accent);
+            font-weight: 600;
+        }
+
         .user-badge{
             background: var(--bg-tertiary);
             border: 1px solid var(--border);
@@ -615,7 +625,10 @@
     <!-- Header -->
     <header class="header">
         <div class="header-inner">
-            <div class="logo">FELT THAT</div>
+            <div style="display:flex;flex-direction:column;gap:0.125rem;">
+                <div class="logo">FELT THAT</div>
+                <div class="header-notice">Nothing stored. No sign up. No account. Posts auto-delete in 24h.</div>
+            </div>
             <div class="header-actions">
                 <div class="user-badge">
                     <span id="currentUsername">anonymous_fox</span>
