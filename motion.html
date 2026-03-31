@@ -588,6 +588,50 @@
             animation-delay: 4s;
         }
 
+        /* Mobile: fixed phone with parallax */
+        @media (max-width: 768px) {
+            .showcase {
+                min-height: 100vh;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                position: relative;
+            }
+
+            .showcase-inner {
+                max-width: 100%;
+            }
+
+            .iphone-container {
+                position: relative;
+                margin-top: 2rem;
+            }
+
+            .iphone-device {
+                width: 260px;
+                height: 560px;
+                border-radius: 38px;
+                animation: none !important;
+                transform: none !important;
+                transition: transform 0.1s ease-out;
+            }
+
+            .iphone-device .screen {
+                border-radius: 30px;
+            }
+
+            .iphone-notch {
+                width: 85px;
+                height: 24px;
+                border-radius: 0 0 12px 12px;
+            }
+
+            .iphone-float {
+                display: none;
+            }
+        }
+
         @keyframes float {
             0%, 100% { transform: translateY(0); }
             50% { transform: translateY(-15px); }
@@ -708,11 +752,7 @@
         @media (max-width: 768px) {
             .features-grid { grid-template-columns: 1fr; }
             .vent-cards { grid-template-columns: 1fr; }
-            .iphone-float { display: none; }
-            .iphone-device { width: 280px; height: 605px; border-radius: 42px; }
-            .iphone-device .screen { border-radius: 35px; }
-            .iphone-notch { width: 95px; height: 28px; border-radius: 0 0 15px 15px; }
-            .problem, .how, .features, .showcase, .cta-section { padding: 5rem 1.5rem; }
+            .problem, .how, .features, .cta-section { padding: 5rem 1.5rem; }
             .step { flex-direction: column; gap: 1rem; }
             .steps::before { display: none; }
         }
@@ -933,6 +973,24 @@
             p.style.animationDuration = (6 + Math.random() * 6) + 's';
             p.style.width = p.style.height = (1 + Math.random() * 2) + 'px';
             particlesContainer.appendChild(p);
+        }
+
+        // Mobile parallax for iPhone
+        const isMobile = window.innerWidth <= 768;
+        const iphoneDevice = document.querySelector('.iphone-device');
+
+        if (isMobile && iphoneDevice) {
+            window.addEventListener('scroll', () => {
+                const showcase = document.querySelector('.showcase');
+                const rect = showcase.getBoundingClientRect();
+                const visible = rect.bottom > 0 && rect.top < window.innerHeight;
+                if (visible) {
+                    const progress = (window.innerHeight - rect.top) / (window.innerHeight + rect.height);
+                    const translateY = (progress - 0.5) * 40;
+                    const rotateY = (progress - 0.5) * 6;
+                    iphoneDevice.style.transform = `translateY(${translateY}px) rotateY(${rotateY}deg)`;
+                }
+            }, { passive: true });
         }
     </script>
 </body>
