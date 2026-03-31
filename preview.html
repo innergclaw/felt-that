@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FELT THAT — Preview</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a0a0a;
+            color: #ffffff;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 4rem 2rem;
+        }
+
+        /* Hero */
+        .hero {
+            text-align: center;
+            margin-bottom: 5rem;
+        }
+
+        .hero-badge {
+            display: inline-block;
+            background: rgba(249, 115, 22, 0.1);
+            border: 1px solid rgba(249, 115, 22, 0.3);
+            padding: 0.5rem 1.25rem;
+            border-radius: 20px;
+            font-size: 0.8125rem;
+            color: #f97316;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .hero h1 {
+            font-size: 4rem;
+            font-weight: 700;
+            line-height: 1.1;
+            margin-bottom: 1rem;
+            letter-spacing: -2px;
+        }
+
+        .hero h1 span {
+            color: #f97316;
+        }
+
+        .hero p {
+            font-size: 1.25rem;
+            color: #a3a3a3;
+            max-width: 500px;
+            margin: 0 auto 2rem;
+            line-height: 1.6;
+        }
+
+        .hero-cta {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            background: #f97316;
+            color: white;
+            text-decoration: none;
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+
+        .hero-cta:hover {
+            background: #ea580c;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 40px rgba(249, 115, 22, 0.3);
+        }
+
+        /* iPhone Mockup */
+        .iphone-section {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 5rem;
+        }
+
+        .iphone-wrapper {
+            position: relative;
+        }
+
+        .iphone-glow {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 450px;
+            height: 450px;
+            background: radial-gradient(circle, rgba(249, 115, 22, 0.15) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .iphone-frame {
+            position: relative;
+            width: 393px;
+            height: 852px;
+            background: #1a1a1a;
+            border-radius: 55px;
+            padding: 12px;
+            box-shadow:
+                0 0 0 2px #333,
+                0 0 0 4px #1a1a1a,
+                0 25px 80px rgba(0,0,0,0.6),
+                0 0 100px rgba(249, 115, 22, 0.1);
+        }
+
+        .iphone-screen {
+            width: 100%;
+            height: 100%;
+            background: #ffffff;
+            border-radius: 45px;
+            overflow: hidden;
+        }
+
+        .iphone-screen iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            border-radius: 45px;
+        }
+
+        /* Notch */
+        .iphone-notch {
+            position: absolute;
+            top: 12px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 126px;
+            height: 37px;
+            background: #1a1a1a;
+            border-radius: 0 0 20px 20px;
+            z-index: 10;
+        }
+
+        /* Side buttons */
+        .iphone-btn-right-1 {
+            position: absolute;
+            right: -4px;
+            top: 180px;
+            width: 4px;
+            height: 35px;
+            background: #333;
+            border-radius: 0 2px 2px 0;
+        }
+
+        .iphone-btn-right-2 {
+            position: absolute;
+            right: -4px;
+            top: 240px;
+            width: 4px;
+            height: 65px;
+            background: #333;
+            border-radius: 0 2px 2px 0;
+        }
+
+        .iphone-btn-right-3 {
+            position: absolute;
+            right: -4px;
+            top: 320px;
+            width: 4px;
+            height: 65px;
+            background: #333;
+            border-radius: 0 2px 2px 0;
+        }
+
+        .iphone-btn-left {
+            position: absolute;
+            left: -4px;
+            top: 200px;
+            width: 4px;
+            height: 30px;
+            background: #333;
+            border-radius: 2px 0 0 2px;
+        }
+
+        /* Features Grid */
+        .features {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 5rem;
+        }
+
+        .feature-card {
+            background: #111;
+            border: 1px solid #222;
+            border-radius: 16px;
+            padding: 2rem;
+            transition: all 0.3s;
+        }
+
+        .feature-card:hover {
+            border-color: #f97316;
+            transform: translateY(-4px);
+            box-shadow: 0 10px 40px rgba(249, 115, 22, 0.1);
+        }
+
+        .feature-icon {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .feature-title {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            font-size: 1.0625rem;
+        }
+
+        .feature-desc {
+            font-size: 0.875rem;
+            color: #a3a3a3;
+            line-height: 1.5;
+        }
+
+        /* Section Divider */
+        .section-divider {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .section-divider h2 {
+            font-size: 2rem;
+            font-weight: 700;
+            letter-spacing: -1px;
+            margin-bottom: 0.5rem;
+        }
+
+        .section-divider p {
+            color: #a3a3a3;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8125rem;
+        }
+
+        /* Screenshot Cards */
+        .screenshots-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 5rem;
+        }
+
+        .screenshot-card {
+            background: #111;
+            border: 1px solid #222;
+            border-radius: 16px;
+            overflow: hidden;
+            transition: all 0.3s;
+        }
+
+        .screenshot-card:hover {
+            border-color: #f97316;
+            box-shadow: 0 10px 40px rgba(249, 115, 22, 0.15);
+        }
+
+        .screenshot-img {
+            width: 100%;
+            height: 200px;
+            background: #fafafa;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #171717;
+            font-size: 3rem;
+        }
+
+        .screenshot-info {
+            padding: 1.25rem;
+        }
+
+        .screenshot-info h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .screenshot-info p {
+            font-size: 0.75rem;
+            color: #a3a3a3;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* Footer CTA */
+        .footer-cta {
+            text-align: center;
+            padding: 4rem 2rem;
+            border-top: 1px solid #222;
+        }
+
+        .footer-cta h2 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            letter-spacing: -1px;
+        }
+
+        .footer-cta h2 span { color: #f97316; }
+
+        .footer-cta p {
+            color: #a3a3a3;
+            margin-bottom: 2rem;
+            font-size: 1.0625rem;
+        }
+
+        .footer-cta .hero-cta {
+            font-size: 1.125rem;
+            padding: 1.125rem 2.5rem;
+        }
+
+        .footer-brand {
+            text-align: center;
+            padding: 2rem;
+            color: #525252;
+            font-size: 0.75rem;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 2.5rem; }
+            .features { grid-template-columns: 1fr; }
+            .screenshots-grid { grid-template-columns: 1fr; }
+            .iphone-frame { transform: scale(0.75); transform-origin: top center; }
+            .container { padding: 2rem 1rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+
+        <!-- Hero -->
+        <div class="hero">
+            <div class="hero-badge">// launching soon</div>
+            <h1>FELT <span>THAT</span></h1>
+            <p>The anonymous venting platform for entrepreneurs. No sign up. No account. Just raw, real talk that disappears in 24 hours.</p>
+            <a href="https://innergclaw.github.io/felt-that/" target="_blank" class="hero-cta">
+                Launch App →
+            </a>
+        </div>
+
+        <!-- iPhone Mockup -->
+        <div class="iphone-section">
+            <div class="iphone-wrapper">
+                <div class="iphone-glow"></div>
+                <div class="iphone-frame">
+                    <div class="iphone-notch"></div>
+                    <div class="iphone-btn-right-1"></div>
+                    <div class="iphone-btn-right-2"></div>
+                    <div class="iphone-btn-right-3"></div>
+                    <div class="iphone-btn-left"></div>
+                    <div class="iphone-screen">
+                        <iframe src="https://innergclaw.github.io/felt-that/" loading="lazy"></iframe>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Features -->
+        <div class="section-divider">
+            <h2>Why <span style="color:#f97316;">FELT THAT</span>?</h2>
+            <p>// built for founders who need to let it out</p>
+        </div>
+
+        <div class="features">
+            <div class="feature-card">
+                <div class="feature-icon">👻</div>
+                <div class="feature-title">100% Anonymous</div>
+                <div class="feature-desc">No sign up. No email. No account. Just pick a username and vent. Nobody knows who you are.</div>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">⏱️</div>
+                <div class="feature-title">24-Hour Posts</div>
+                <div class="feature-desc">Every post auto-deletes after 24 hours. Say what you need to say and let it go. Nothing lingers.</div>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🏢</div>
+                <div class="feature-title">Industry Timelines</div>
+                <div class="feature-desc">Filter by tech, creative, finance, food, real estate — or add your own. Find people who get it.</div>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">💬</div>
+                <div class="feature-title">Real Comments</div>
+                <div class="feature-desc">Reply to posts. Delete your comments within 90 seconds. Real conversations, no permanent record.</div>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">❤️</div>
+                <div class="feature-title">React & Relate</div>
+                <div class="feature-desc">Like posts that hit home. See what resonates with other entrepreneurs going through it too.</div>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">⚡</div>
+                <div class="feature-title">Real-Time Sync</div>
+                <div class="feature-desc">Live feed across all devices. Post from your phone, see it on your laptop instantly.</div>
+            </div>
+        </div>
+
+        <!-- Screenshot Cards -->
+        <div class="section-divider">
+            <h2>The Experience</h2>
+            <p>// scroll through the vibe</p>
+        </div>
+
+        <div class="screenshots-grid">
+            <div class="screenshot-card">
+                <div class="screenshot-img" style="background: linear-gradient(135deg, #fafafa, #f5f5f5);">📝</div>
+                <div class="screenshot-info">
+                    <h3>Post Your Vent</h3>
+                    <p>// composer: textarea</p>
+                </div>
+            </div>
+            <div class="screenshot-card">
+                <div class="screenshot-img" style="background: linear-gradient(135deg, #fafafa, #f5f5f5);">🏢</div>
+                <div class="screenshot-info">
+                    <h3>Filter by Industry</h3>
+                    <p>// industry-tabs</p>
+                </div>
+            </div>
+            <div class="screenshot-card">
+                <div class="screenshot-img" style="background: linear-gradient(135deg, #fafafa, #f5f5f5);">💬</div>
+                <div class="screenshot-info">
+                    <h3>Comment & Connect</h3>
+                    <p>// comments-section</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer CTA -->
+        <div class="footer-cta">
+            <h2>Felt That? <span>Share That.</span></h2>
+            <p>No judgment. No identity. Just entrepreneurs being real.</p>
+            <a href="https://innergclaw.github.io/felt-that/" target="_blank" class="hero-cta">
+                Launch App →
+            </a>
+        </div>
+
+        <div class="footer-brand">
+            FELT THAT — built by InnerG Intel
+        </div>
+
+    </div>
+
+</body>
+</html>
