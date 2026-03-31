@@ -505,7 +505,8 @@
 
         .iphone-container {
             position: relative;
-            display: inline-block;
+            display: flex;
+            justify-content: center;
             margin-top: 4rem;
             perspective: 1000px;
         }
@@ -522,12 +523,11 @@
             border-radius: 48px;
             padding: 10px;
             box-shadow:
-                0 0 0 2px #333,
-                0 0 0 4px #1a1a1a,
                 0 40px 100px rgba(0,0,0,0.8),
                 0 0 150px var(--orange-glow);
             transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
             transform-style: preserve-3d;
+            flex-shrink: 0;
         }
 
         .iphone-device .screen {
