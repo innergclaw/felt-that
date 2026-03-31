@@ -1072,6 +1072,13 @@
             savePosts();
             renderPosts();
             updateCounts();
+
+            // Track post in analytics
+            const aKey = 'feltthat_analytics';
+            const aData = JSON.parse(localStorage.getItem(aKey) || '{"visits":[],"posts":[],"dailyVisits":{}}');
+            aData.posts.push(Date.now());
+            localStorage.setItem(aKey, JSON.stringify(aData));
+            try { fetch('https://api.counterapi.dev/v1/felt-that/posts/up'); } catch(e) {}
             
             document.getElementById('postContent').value = '';
             document.getElementById('charCount').textContent = '0';
@@ -1149,6 +1156,22 @@
                 btn.style.transform = '';
             }, 500);
         }
+
+        // === Analytics Tracking ===
+        function recordVisit() {
+            const key = 'feltthat_analytics';
+            const data = JSON.parse(localStorage.getItem(key) || '{"visits":[],"posts":[],"dailyVisits":{}}');
+            const now = Date.now();
+            data.visits.push(now);
+            const today = new Date().toISOString().split('T')[0];
+            data.dailyVisits[today] = (data.dailyVisits[today] || 0) + 1;
+            const cutoff = now - (90 * 86400000);
+            data.visits = data.visits.filter(t => t > cutoff);
+            localStorage.setItem(key, JSON.stringify(data));
+            // Remote counter
+            try { fetch('https://api.counterapi.dev/v1/felt-that/visits/up'); } catch(e) {}
+        }
+        recordVisit();
     </script>
 </body>
 </html>

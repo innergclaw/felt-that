@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FELT THAT — Analytics Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg: #ffffff;
+            --bg2: #fafafa;
+            --bg3: #f5f5f5;
+            --accent: #f97316;
+            --accent-hover: #ea580c;
+            --text: #171717;
+            --text2: #525252;
+            --muted: #a3a3a3;
+            --border: #e5e5e5;
+            --danger: #ef4444;
+            --success: #22c55e;
+            --black: #000000;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        .header {
+            border-bottom: 1px solid var(--border);
+            padding: 1.5rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--black);
+        }
+
+        .logo span { color: var(--accent); }
+
+        .header-link {
+            font-size: 0.8125rem;
+            color: var(--text2);
+            text-decoration: none;
+        }
+
+        .header-link:hover { color: var(--accent); }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .section-title {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--muted);
+            margin-bottom: 1rem;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .stat-card {
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: border-color 0.2s;
+        }
+
+        .stat-card:hover { border-color: #d4d4d4; }
+
+        .stat-label {
+            font-size: 0.8125rem;
+            color: var(--text2);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--black);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .stat-change {
+            font-size: 0.75rem;
+            margin-top: 0.375rem;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .stat-change.up { color: var(--success); }
+        .stat-change.down { color: var(--danger); }
+
+        /* Chart Area */
+        .chart-card {
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .chart-title {
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        .chart-period {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .period-btn {
+            background: var(--bg3);
+            border: 1px solid var(--border);
+            padding: 0.375rem 0.875rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            font-family: inherit;
+            color: var(--text2);
+            transition: all 0.2s;
+        }
+
+        .period-btn.active {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: white;
+        }
+
+        .period-btn:hover:not(.active) {
+            border-color: var(--text-muted);
+        }
+
+        /* Bar Chart */
+        .bar-chart {
+            display: flex;
+            align-items: flex-end;
+            gap: 6px;
+            height: 200px;
+            padding-top: 1rem;
+        }
+
+        .bar-col {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .bar {
+            width: 100%;
+            max-width: 40px;
+            background: var(--accent);
+            border-radius: 4px 4px 0 0;
+            min-height: 4px;
+            transition: all 0.5s ease;
+            opacity: 0.7;
+        }
+
+        .bar-col:hover .bar { opacity: 1; }
+
+        .bar-label {
+            font-size: 0.625rem;
+            color: var(--muted);
+        }
+
+        .bar-value {
+            font-size: 0.625rem;
+            color: var(--text2);
+            font-weight: 600;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* Activity Feed */
+        .activity-card {
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+        }
+
+        .activity-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .activity-item:last-child { border-bottom: none; }
+
+        .activity-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--accent);
+            flex-shrink: 0;
+        }
+
+        .activity-dot.green { background: var(--success); }
+
+        .activity-text {
+            font-size: 0.875rem;
+            color: var(--text2);
+        }
+
+        .activity-text strong { color: var(--text); }
+
+        .activity-time {
+            margin-left: auto;
+            font-size: 0.75rem;
+            color: var(--muted);
+            flex-shrink: 0;
+        }
+
+        /* Live Indicator */
+        .live-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.375rem;
+            background: rgba(34, 197, 94, 0.1);
+            color: var(--success);
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .live-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--success);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        .empty-notice {
+            text-align: center;
+            padding: 3rem;
+            color: var(--muted);
+            font-size: 0.875rem;
+        }
+
+        .empty-notice strong { color: var(--text2); }
+
+        @media (max-width: 640px) {
+            .container { padding: 1rem; }
+            .stats-grid { grid-template-columns: 1fr 1fr; }
+            .bar-label { font-size: 0.5rem; }
+            .bar { max-width: 24px; }
+        }
+    </style>
+</head>
+<body>
+
+    <header class="header">
+        <div class="logo">FELT THAT <span>/ analytics</span></div>
+        <a href="index.html" class="header-link">← Back to site</a>
+    </header>
+
+    <main class="container">
+
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:2rem;">
+            <h1 style="font-size:1.5rem;font-weight:700;">Dashboard</h1>
+            <div class="live-badge">
+                <div class="live-dot"></div>
+                Live
+            </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-label">Total Visits</div>
+                <div class="stat-value" id="totalVisits">0</div>
+                <div class="stat-change up" id="totalChange">—</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Today</div>
+                <div class="stat-value" id="todayVisits">0</div>
+                <div class="stat-change up" id="todayChange">—</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Posts Created</div>
+                <div class="stat-value" id="totalPosts">0</div>
+                <div class="stat-change" id="postsChange">—</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Avg. Session</div>
+                <div class="stat-value" id="avgSession">0s</div>
+                <div class="stat-change" id="sessionChange">—</div>
+            </div>
+        </div>
+
+        <!-- Visits Chart -->
+        <div class="section-title">Traffic (Last 7 Days)</div>
+        <div class="chart-card">
+            <div class="chart-header">
+                <div class="chart-title">Page Views</div>
+                <div class="chart-period">
+                    <button class="period-btn active" onclick="setPeriod('7d', this)">7D</button>
+                    <button class="period-btn" onclick="setPeriod('30d', this)">30D</button>
+                </div>
+            </div>
+            <div class="bar-chart" id="barChart">
+                <!-- Bars injected by JS -->
+            </div>
+        </div>
+
+        <!-- Activity Feed -->
+        <div class="section-title">Recent Activity</div>
+        <div class="activity-card" id="activityFeed">
+            <!-- Injected by JS -->
+        </div>
+
+    </main>
+
+    <script>
+        // === ANALYTICS ENGINE ===
+        // Uses localStorage + a shared JSON counter for cross-device tracking
+
+        const COUNTER_API = 'https://api.counterapi.dev/v1/felt-that';
+        const STORAGE_KEY = 'feltthat_analytics';
+
+        // Initialize analytics data
+        function getAnalytics() {
+            const saved = localStorage.getItem(STORAGE_KEY);
+            return saved ? JSON.parse(saved) : {
+                visits: [],
+                posts: [],
+                dailyVisits: {}
+            };
+        }
+
+        function saveAnalytics(data) {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+        }
+
+        // Record a visit
+        function recordVisit() {
+            const data = getAnalytics();
+            const now = Date.now();
+            data.visits.push(now);
+            const today = new Date().toISOString().split('T')[0];
+            data.dailyVisits[today] = (data.dailyVisits[today] || 0) + 1;
+
+            // Keep last 90 days
+            const cutoff = now - (90 * 86400000);
+            data.visits = data.visits.filter(t => t > cutoff);
+
+            saveAnalytics(data);
+            updateRemoteCounter();
+        }
+
+        // Record a post
+        function recordPost() {
+            const data = getAnalytics();
+            data.posts.push(Date.now());
+            saveAnalytics(data);
+        }
+
+        // Remote counter (for cross-device)
+        async function updateRemoteCounter() {
+            try {
+                await fetch(`${COUNTER_API}/visits/up`);
+            } catch(e) {}
+        }
+
+        async function getRemoteCounter() {
+            try {
+                const res = await fetch(`${COUNTER_API}/visits`);
+                const data = await res.json();
+                return data.count || 0;
+            } catch(e) {
+                return 0;
+            }
+        }
+
+        // === RENDERING ===
+
+        let currentPeriod = '7d';
+
+        function setPeriod(period, btn) {
+            currentPeriod = period;
+            document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            renderChart();
+        }
+
+        function renderStats(remoteCount) {
+            const data = getAnalytics();
+            const today = new Date().toISOString().split('T')[0];
+            const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+
+            const todayCount = data.dailyVisits[today] || 0;
+            const yesterdayCount = data.dailyVisits[yesterday] || 0;
+
+            // Use remote count for total, local for today
+            document.getElementById('totalVisits').textContent = remoteCount.toLocaleString();
+
+            const totalLocal = data.visits.length;
+            document.getElementById('todayVisits').textContent = todayCount;
+
+            // Posts count from localStorage posts
+            const posts = JSON.parse(localStorage.getItem('feltthat_posts') || '[]');
+            document.getElementById('totalPosts').textContent = posts.length;
+
+            // Avg session (simulated from time between page loads)
+            const recentVisits = data.visits.slice(-10);
+            let avgMs = 0;
+            if (recentVisits.length > 1) {
+                let diffs = [];
+                for (let i = 1; i < recentVisits.length; i++) {
+                    diffs.push(recentVisits[i] - recentVisits[i-1]);
+                }
+                avgMs = diffs.reduce((a,b) => a+b, 0) / diffs.length;
+            }
+            if (avgMs < 60000) {
+                document.getElementById('avgSession').textContent = Math.round(avgMs/1000) + 's';
+            } else {
+                document.getElementById('avgSession').textContent = Math.round(avgMs/60000) + 'm';
+            }
+
+            // Change indicators
+            const todayChange = document.getElementById('todayChange');
+            if (yesterdayCount > 0) {
+                const pct = Math.round(((todayCount - yesterdayCount) / yesterdayCount) * 100);
+                todayChange.textContent = `${pct > 0 ? '+' : ''}${pct}% vs yesterday`;
+                todayChange.className = `stat-change ${pct >= 0 ? 'up' : 'down'}`;
+            } else {
+                todayChange.textContent = 'No data yesterday';
+                todayChange.className = 'stat-change';
+            }
+
+            const totalChange = document.getElementById('totalChange');
+            totalChange.textContent = 'All time';
+            totalChange.className = 'stat-change';
+
+            const postsChange = document.getElementById('postsChange');
+            postsChange.textContent = `${posts.filter(p => p.timestamp > Date.now() - 86400000).length} today`;
+            postsChange.className = 'stat-change';
+        }
+
+        function renderChart() {
+            const data = getAnalytics();
+            const days = currentPeriod === '7d' ? 7 : 30;
+            const chart = document.getElementById('barChart');
+
+            let bars = [];
+            for (let i = days - 1; i >= 0; i--) {
+                const date = new Date(Date.now() - (i * 86400000));
+                const key = date.toISOString().split('T')[0];
+                const count = data.dailyVisits[key] || 0;
+                const label = date.toLocaleDateString('en-US', { weekday: 'short' });
+
+                bars.push({ label, count, date: key });
+            }
+
+            const maxCount = Math.max(...bars.map(b => b.count), 1);
+
+            chart.innerHTML = bars.map(b => {
+                const height = Math.max((b.count / maxCount) * 180, 4);
+                return `
+                    <div class="bar-col">
+                        <div class="bar-value">${b.count}</div>
+                        <div class="bar" style="height:${height}px"></div>
+                        <div class="bar-label">${b.label}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderActivity() {
+            const data = getAnalytics();
+            const feed = document.getElementById('activityFeed');
+            const posts = JSON.parse(localStorage.getItem('feltthat_posts') || '[]');
+            const recentPosts = posts.slice().sort((a,b) => b.timestamp - a.timestamp).slice(0, 5);
+            const recentVisits = data.visits.slice(-5).reverse();
+
+            let items = [];
+
+            // Recent visits
+            recentVisits.forEach(v => {
+                items.push({
+                    time: v,
+                    text: '<strong>New visit</strong> to FELT THAT',
+                    type: 'visit'
+                });
+            });
+
+            // Recent posts
+            recentPosts.forEach(p => {
+                items.push({
+                    time: p.timestamp,
+                    text: `<strong>${p.username}</strong> posted in ${p.industry}`,
+                    type: 'post'
+                });
+            });
+
+            // Sort and show latest 8
+            items.sort((a,b) => b.time - a.time);
+            items = items.slice(0, 8);
+
+            if (items.length === 0) {
+                feed.innerHTML = '<div class="empty-notice"><strong>No activity yet.</strong><br>Visit the main site to start tracking.</div>';
+                return;
+            }
+
+            feed.innerHTML = items.map(item => `
+                <div class="activity-item">
+                    <div class="activity-dot ${item.type === 'post' ? 'green' : ''}"></div>
+                    <div class="activity-text">${item.text}</div>
+                    <div class="activity-time">${formatTime(item.time)}</div>
+                </div>
+            `).join('');
+        }
+
+        function formatTime(ts) {
+            const diff = Date.now() - ts;
+            const mins = Math.floor(diff / 60000);
+            const hrs = Math.floor(diff / 3600000);
+            const days = Math.floor(diff / 86400000);
+            if (mins < 1) return 'Just now';
+            if (mins < 60) return `${mins}m ago`;
+            if (hrs < 24) return `${hrs}h ago`;
+            return `${days}d ago`;
+        }
+
+        // === INIT ===
+        async function init() {
+            // Record this visit
+            recordVisit();
+
+            // Get remote counter for total
+            const remoteCount = await getRemoteCounter();
+
+            // Render everything
+            renderStats(remoteCount);
+            renderChart();
+            renderActivity();
+        }
+
+        init();
+    </script>
+
+</body>
+</html>
