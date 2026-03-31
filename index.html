@@ -5,12 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FELT THAT — Anonymous Entrepreneur Venting</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         :root {
             --bg-primary: #ffffff;
@@ -26,603 +24,109 @@
             --black: #000000;
         }
 
-        body {
-            font-family: 'Inter', sans-serif;
-            background: var(--bg-primary);
-            color: var(--text-primary);
-            min-height: 100vh;
-        }
-
-        /* Header */
-        .header {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 70px;
-            background: var(--bg-primary);
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 0 2rem;
-            z-index: 100;
-        }
-
-        .header-inner {
-            width: 100%;
-            max-width: 680px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .logo {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--black);
-            letter-spacing: -1px;
-        }
-
-        .header-actions {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-        }
-
-        .header-notice{
-            font-size: 0.6875rem;
-            color: var(--text-muted);
-        }
-
-        .header-notice span{
-            color: var(--accent);
-            font-weight: 600;
-        }
-
-        .user-badge{
-            background: var(--bg-tertiary);
-            border: 1px solid var(--border);
-            padding: 0.5rem 1rem;
-            border-radius: 20px;
-            font-size: 0.875rem;
-            color: var(--text-secondary);
-        }
-
-        .user-badge span{
-            color: var(--accent);
-            font-weight: 600;
-        }
-
-        .btn{
-            background: var(--black);
-            color: #ffffff;
-            border: none;
-            padding: 0.625rem 1.25rem;
-            border-radius: 8px;
-            font-size: 0.875rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .btn:hover{
-            background: var(--accent);
-            transform: translateY(-1px);
-        }
-
-        .btn-secondary{
-            background: transparent;
-            color: var(--text-primary);
-            border: 1px solid var(--border);
-        }
-
-        .btn-secondary:hover{
-            background: var(--bg-tertiary);
-            border-color: var(--text-muted);
-        }
-
-        /* Feed */
-        .feed{
-            margin: 0 auto;
-            padding: 2rem;
-            padding-top: 90px;
-            max-width: 680px;
-        }
-
-        .feed-header{
-            margin-bottom: 1rem;
-        }
-
-        .feed-title{
-            font-size: 1.5rem;
-            font-weight: 700;
-        }
-
-        .feed-subtitle{
-            color: var(--text-secondary);
-            font-size: 0.875rem;
-            margin-top: 0.25rem;
-            margin-bottom: 1.25rem;
-        }
-
-        /* Industry Tabs */
-        .industry-tabs{
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .industry-tab{
-            background: var(--bg-tertiary);
-            border: 1px solid var(--border);
-            padding: 0.5rem 1rem;
-            border-radius: 20px;
-            cursor: pointer;
-            font-size: 0.8125rem;
-            color: var(--text-secondary);
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 0.375rem;
-        }
-
-        .industry-tab:hover{
-            border-color: var(--accent);
-            color: var(--text-primary);
-        }
-
-        .industry-tab.active{
-            background: var(--accent);
-            border-color: var(--accent);
-            color: white;
-        }
-
-        .industry-tab-count{
-            font-size: 0.6875rem;
-            background: var(--bg-primary);
-            padding: 0.125rem 0.375rem;
-            border-radius: 10px;
-            color: var(--text-muted);
-        }
-
-        .industry-tab.active .industry-tab-count{
-            background: rgba(255,255,255,0.25);
-            color: white;
-        }
-
-        /* Post Composer */
-        .composer{
-            background: var(--bg-secondary);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 1.25rem;
-            margin-bottom: 2rem;
-        }
-
-        .composer-header{
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            margin-bottom: 1rem;
-        }
-
-        .avatar{
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, var(--accent), var(--black));
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 700;
-            font-size: 1rem;
-            color: white;
-        }
-
-        .composer-name{
-            font-weight: 600;
-        }
-
-        .composer-industry{
-            font-size: 0.75rem;
-            color: var(--text-muted);
-        }
-
-        .composer textarea{
-            width: 100%;
-            background: var(--bg-tertiary);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 1rem;
-            color: var(--text-primary);
-            font-family: inherit;
-            font-size: 0.9375rem;
-            resize: none;
-            min-height: 100px;
-            transition: border-color 0.2s;
-        }
-
-        .composer textarea:focus{
-            outline: none;
-            border-color: var(--accent);
-        }
-
-        .composer-footer{
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 1rem;
-        }
-
-        .char-count{
-            font-size: 0.75rem;
-            color: var(--text-muted);
-        }
-
-        /* Post Cards */
-        .post-card{
-            background: var(--bg-secondary);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 1.25rem;
-            margin-bottom: 1rem;
-            transition: border-color 0.2s;
-        }
-
-        .post-card:hover{
-            border-color: #d4d4d4;
-        }
-
-        .post-header{
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            margin-bottom: 1rem;
-        }
-
-        .post-meta{
-            flex: 1;
-        }
-
-        .post-username{
-            font-weight: 600;
-        }
-
-        .post-timer{
-            font-size: 0.75rem;
-            color: var(--danger);
-            display: flex;
-            align-items: center;
-            gap: 0.25rem;
-        }
-
-        .post-time{
-            font-size: 0.75rem;
-            color: var(--text-muted);
-            margin-top: 0.125rem;
-        }
-
-        .post-industry-tag{
-            font-size: 0.75rem;
-            background: rgba(249, 115, 22, 0.1);
-            padding: 0.25rem 0.625rem;
-            border-radius: 12px;
-            color: var(--accent);
-            border: 1px solid rgba(249, 115, 22, 0.2);
-        }
-
-        .post-content{
-            font-size: 0.9375rem;
-            line-height: 1.6;
-            color: var(--text-primary);
-            margin-bottom: 1rem;
-        }
-
-        .post-actions{
-            display: flex;
-            align-items: center;
-            gap: 1.5rem;
-            padding-top: 1rem;
-            border-top: 1px solid var(--border);
-        }
-
-        .action-btn{
-            background: none;
-            border: none;
-            color: var(--text-secondary);
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-size: 0.875rem;
-            font-family: inherit;
-            transition: color 0.2s;
-        }
-
-        .action-btn:hover{
-            color: var(--text-primary);
-        }
-
-        .action-btn.liked{
-            color: var(--accent);
-        }
-
-        /* Comments Section */
-        .comments-section{
-            margin-top: 1rem;
-            padding-top: 1rem;
-            border-top: 1px solid var(--border);
-            display: none;
-        }
-
-        .comments-section.open{
-            display: block;
-        }
-
-        .comment{
-            display: flex;
-            gap: 0.75rem;
-            margin-bottom: 1rem;
-        }
-
-        .comment .avatar{
-            width: 32px;
-            height: 32px;
-            font-size: 0.75rem;
-            flex-shrink: 0;
-        }
-
-        .comment-content{
-            flex: 1;
-        }
-
-        .comment-header{
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            margin-bottom: 0.25rem;
-        }
-
-        .comment-username{
-            font-weight: 600;
-            font-size: 0.875rem;
-        }
-
-        .comment-time{
-            font-size: 0.75rem;
-            color: var(--text-muted);
-        }
-
-        .comment-actions{
-            margin-left: auto;
-        }
-
-        .delete-btn{
-            background: none;
-            border: none;
-            color: var(--text-muted);
-            cursor: pointer;
-            font-size: 0.6875rem;
-            font-family: inherit;
-            padding: 0.25rem 0.5rem;
-            border-radius: 4px;
-            transition: all 0.2s;
-        }
-
-        .comment:hover .delete-btn{
-            color: var(--danger);
-        }
-
-        @media (max-width: 768px){
-            .delete-btn{
-                color: var(--danger);
-            }
-        }
-
-        .comment-text{
-            font-size: 0.875rem;
-            color: var(--text-secondary);
-            line-height: 1.5;
-        }
-
-        .comment-input-wrapper{
-            display: flex;
-            gap: 0.75rem;
-            margin-top: 1rem;
-        }
-
-        .comment-input-wrapper input{
-            flex: 1;
-            background: var(--bg-tertiary);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 0.625rem 1rem;
-            color: var(--text-primary);
-            font-family: inherit;
-            font-size: 0.875rem;
-        }
-
-        .comment-input-wrapper input:focus{
-            outline: none;
-            border-color: var(--accent);
-        }
-
-        .comment-input-wrapper .btn{
-            padding: 0.625rem 1rem;
-            font-size: 0.8125rem;
-        }
-
-        /* Setup Modal */
-        .modal-overlay{
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.5);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.3s;
-        }
-
-        .modal-overlay.active{
-            opacity: 1;
-            visibility: visible;
-        }
-
-        .modal{
-            background: var(--bg-primary);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 2.5rem;
-            max-width: 420px;
-            width: 90%;
-            transform: translateY(20px);
-            transition: transform 0.3s;
-        }
-
-        .modal-overlay.active .modal{
-            transform: translateY(0);
-        }
-
-        .modal-title{
-            font-size: 1.75rem;
-            font-weight: 700;
-            margin-bottom: 0.5rem;
-            text-align: center;
-        }
-
-        .modal-subtitle{
-            color: var(--text-secondary);
-            font-size: 0.9375rem;
-            text-align: center;
-            margin-bottom: 2rem;
-        }
-
-        .modal-input{
-            width: 100%;
-            background: var(--bg-tertiary);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 1rem;
-            color: var(--text-primary);
-            font-family: inherit;
-            font-size: 1rem;
-            margin-bottom: 1rem;
-            text-align: center;
-        }
-
-        .modal-input:focus{
-            outline: none;
-            border-color: var(--accent);
-        }
-
-        .modal-hint{
-            font-size: 0.75rem;
-            color: var(--text-muted);
-            text-align: center;
-            margin-bottom: 1.5rem;
-        }
-
-        .modal .btn{
-            width: 100%;
-            justify-content: center;
-            padding: 0.875rem;
-            font-size: 1rem;
-        }
-
-        .industry-tab.add-tab{
-            background: transparent;
-            border: 1px dashed var(--text-muted);
-            color: var(--text-muted);
-        }
-
-        .industry-tab.add-tab:hover{
-            border-color: var(--accent);
-            color: var(--accent);
-        }
-
-        /* Footer */
-        .footer{
-            text-align: center;
-            padding: 3rem 2rem 2rem;
-            color: var(--text-muted);
-            font-size: 0.75rem;
-        }
-
-        .footer span{
-            color: var(--accent);
-            font-weight: 600;
-        }
-
-        /* Empty State */
-        .empty-state{
-            text-align: center;
-            padding: 4rem 2rem;
-            color: var(--text-secondary);
-        }
-
-        .empty-icon{
-            font-size: 3rem;
-            margin-bottom: 1rem;
-        }
-
-        .empty-title{
-            font-size: 1.25rem;
-            font-weight: 600;
-            color: var(--text-primary);
-            margin-bottom: 0.5rem;
-        }
-
-        /* Responsive */
-        @media (max-width: 768px){
-            .feed{
-                padding: 1rem;
-                padding-top: 90px;
-            }
-
-            .header{
-                padding: 0 1rem;
-            }
-
-            .logo{
-                font-size: 1.25rem;
-            }
-
-            .user-badge{
-                display: none;
-            }
-        }
-
-        /* Animations */
-        @keyframes fadeIn{
-            from{
-                opacity: 0;
-                transform: translateY(10px);
-            }
-            to{
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .post-card{
-            animation: fadeIn 0.3s ease;
+        body { font-family: 'Inter', sans-serif; background: var(--bg-primary); color: var(--text-primary); min-height: 100vh; }
+
+        .header { position: fixed; top: 0; left: 0; right: 0; height: 70px; background: var(--bg-primary); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: center; padding: 0 2rem; z-index: 100; }
+        .header-inner { width: 100%; max-width: 680px; display: flex; align-items: center; justify-content: space-between; }
+        .logo { font-family: 'JetBrains Mono', monospace; font-size: 1.5rem; font-weight: 700; color: var(--black); letter-spacing: -1px; }
+        .header-actions { display: flex; align-items: center; gap: 0.75rem; }
+        .header-notice { font-size: 0.6875rem; color: var(--text-muted); }
+        .header-notice span { color: var(--accent); font-weight: 600; }
+        .user-badge { background: var(--bg-tertiary); border: 1px solid var(--border); padding: 0.5rem 1rem; border-radius: 20px; font-size: 0.875rem; color: var(--text-secondary); }
+        .user-badge span { color: var(--accent); font-weight: 600; }
+        .btn { background: var(--black); color: #ffffff; border: none; padding: 0.625rem 1.25rem; border-radius: 8px; font-size: 0.875rem; font-weight: 600; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 0.5rem; }
+        .btn:hover { background: var(--accent); transform: translateY(-1px); }
+        .btn-secondary { background: transparent; color: var(--text-primary); border: 1px solid var(--border); }
+        .btn-secondary:hover { background: var(--bg-tertiary); border-color: var(--text-muted); }
+
+        .feed { margin: 0 auto; padding: 2rem; padding-top: 90px; max-width: 680px; }
+        .feed-header { margin-bottom: 1rem; }
+        .feed-title { font-size: 1.5rem; font-weight: 700; }
+        .feed-subtitle { color: var(--text-secondary); font-size: 0.875rem; margin-top: 0.25rem; margin-bottom: 1.25rem; }
+
+        .industry-tabs { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1.5rem; }
+        .industry-tab { background: var(--bg-tertiary); border: 1px solid var(--border); padding: 0.5rem 1rem; border-radius: 20px; cursor: pointer; font-size: 0.8125rem; color: var(--text-secondary); transition: all 0.2s; display: flex; align-items: center; gap: 0.375rem; }
+        .industry-tab:hover { border-color: var(--accent); color: var(--text-primary); }
+        .industry-tab.active { background: var(--accent); border-color: var(--accent); color: white; }
+        .industry-tab-count { font-size: 0.6875rem; background: var(--bg-primary); padding: 0.125rem 0.375rem; border-radius: 10px; color: var(--text-muted); }
+        .industry-tab.active .industry-tab-count { background: rgba(255,255,255,0.25); color: white; }
+        .industry-tab.add-tab { background: transparent; border: 1px dashed var(--text-muted); color: var(--text-muted); }
+        .industry-tab.add-tab:hover { border-color: var(--accent); color: var(--accent); }
+
+        .composer { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem; margin-bottom: 2rem; }
+        .composer-header { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem; }
+        .avatar { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, var(--accent), var(--black)); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1rem; color: white; }
+        .composer-name { font-weight: 600; }
+        .composer-industry { font-size: 0.75rem; color: var(--text-muted); }
+        .composer textarea { width: 100%; background: var(--bg-tertiary); border: 1px solid var(--border); border-radius: 8px; padding: 1rem; color: var(--text-primary); font-family: inherit; font-size: 0.9375rem; resize: none; min-height: 100px; transition: border-color 0.2s; }
+        .composer textarea:focus { outline: none; border-color: var(--accent); }
+        .composer-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 1rem; }
+        .char-count { font-size: 0.75rem; color: var(--text-muted); }
+
+        .post-card { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem; margin-bottom: 1rem; transition: border-color 0.2s; animation: fadeIn 0.3s ease; }
+        .post-card:hover { border-color: #d4d4d4; }
+        .post-header { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem; }
+        .post-meta { flex: 1; }
+        .post-username { font-weight: 600; }
+        .post-timer { font-size: 0.75rem; color: var(--danger); display: flex; align-items: center; gap: 0.25rem; }
+        .post-time { font-size: 0.75rem; color: var(--text-muted); margin-top: 0.125rem; }
+        .post-industry-tag { font-size: 0.75rem; background: rgba(249, 115, 22, 0.1); padding: 0.25rem 0.625rem; border-radius: 12px; color: var(--accent); border: 1px solid rgba(249, 115, 22, 0.2); }
+        .post-content { font-size: 0.9375rem; line-height: 1.6; color: var(--text-primary); margin-bottom: 1rem; }
+        .post-actions { display: flex; align-items: center; gap: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--border); }
+        .action-btn { background: none; border: none; color: var(--text-secondary); cursor: pointer; display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem; font-family: inherit; transition: color 0.2s; }
+        .action-btn:hover { color: var(--text-primary); }
+        .action-btn.liked { color: var(--accent); }
+
+        .comments-section { margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border); display: none; }
+        .comments-section.open { display: block; }
+        .comment { display: flex; gap: 0.75rem; margin-bottom: 1rem; }
+        .comment .avatar { width: 32px; height: 32px; font-size: 0.75rem; flex-shrink: 0; }
+        .comment-content { flex: 1; }
+        .comment-header { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem; }
+        .comment-username { font-weight: 600; font-size: 0.875rem; }
+        .comment-time { font-size: 0.75rem; color: var(--text-muted); }
+        .comment-actions { margin-left: auto; }
+        .delete-btn { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 0.6875rem; font-family: inherit; padding: 0.25rem 0.5rem; border-radius: 4px; transition: all 0.2s; }
+        .comment:hover .delete-btn { color: var(--danger); }
+        @media (max-width: 768px) { .delete-btn { color: var(--danger); } }
+        .comment-text { font-size: 0.875rem; color: var(--text-secondary); line-height: 1.5; }
+        .comment-input-wrapper { display: flex; gap: 0.75rem; margin-top: 1rem; }
+        .comment-input-wrapper input { flex: 1; background: var(--bg-tertiary); border: 1px solid var(--border); border-radius: 8px; padding: 0.625rem 1rem; color: var(--text-primary); font-family: inherit; font-size: 0.875rem; }
+        .comment-input-wrapper input:focus { outline: none; border-color: var(--accent); }
+        .comment-input-wrapper .btn { padding: 0.625rem 1rem; font-size: 0.8125rem; }
+
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; opacity: 0; visibility: hidden; transition: all 0.3s; }
+        .modal-overlay.active { opacity: 1; visibility: visible; }
+        .modal { background: var(--bg-primary); border: 1px solid var(--border); border-radius: 16px; padding: 2.5rem; max-width: 420px; width: 90%; transform: translateY(20px); transition: transform 0.3s; }
+        .modal-overlay.active .modal { transform: translateY(0); }
+        .modal-title { font-size: 1.75rem; font-weight: 700; margin-bottom: 0.5rem; text-align: center; }
+        .modal-subtitle { color: var(--text-secondary); font-size: 0.9375rem; text-align: center; margin-bottom: 2rem; }
+        .modal-input { width: 100%; background: var(--bg-tertiary); border: 1px solid var(--border); border-radius: 8px; padding: 1rem; color: var(--text-primary); font-family: inherit; font-size: 1rem; margin-bottom: 1rem; text-align: center; }
+        .modal-input:focus { outline: none; border-color: var(--accent); }
+        .modal-hint { font-size: 0.75rem; color: var(--text-muted); text-align: center; margin-bottom: 1.5rem; }
+        .modal .btn { width: 100%; justify-content: center; padding: 0.875rem; font-size: 1rem; }
+
+        .footer { text-align: center; padding: 3rem 2rem 2rem; color: var(--text-muted); font-size: 0.75rem; }
+        .footer span { color: var(--accent); font-weight: 600; }
+
+        .empty-state { text-align: center; padding: 4rem 2rem; color: var(--text-secondary); }
+        .empty-icon { font-size: 3rem; margin-bottom: 1rem; }
+        .empty-title { font-size: 1.25rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.5rem; }
+
+        .loading { text-align: center; padding: 3rem; color: var(--text-muted); }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        @media (max-width: 768px) {
+            .feed { padding: 1rem; padding-top: 90px; }
+            .header { padding: 0 1rem; }
+            .logo { font-size: 1.25rem; }
+            .user-badge { display: none; }
         }
     </style>
 </head>
 <body>
-    <!-- Header -->
+
     <header class="header">
         <div class="header-inner">
             <div style="display:flex;flex-direction:column;gap:0.125rem;">
@@ -630,9 +134,7 @@
                 <div class="header-notice">Nothing stored. No sign up. No account. Posts auto-delete in 24h.</div>
             </div>
             <div class="header-actions">
-                <div class="user-badge">
-                    <span id="currentUsername">anonymous_fox</span>
-                </div>
+                <div class="user-badge"><span id="currentUsername">anonymous</span></div>
                 <button class="btn btn-secondary" onclick="refreshPosts()">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/>
@@ -642,7 +144,6 @@
         </div>
     </header>
 
-    <!-- Feed -->
     <main class="feed">
         <div class="feed-header">
             <h1 class="feed-title" id="feedTitle">All Industries</h1>
@@ -662,12 +163,11 @@
             </div>
         </div>
 
-        <!-- Composer -->
         <div class="composer">
             <div class="composer-header">
                 <div class="avatar" id="composerAvatar">A</div>
                 <div>
-                    <div class="composer-name" id="composerName">anonymous_fox</div>
+                    <div class="composer-name" id="composerName">anonymous</div>
                     <div class="composer-industry">Share something real...</div>
                 </div>
             </div>
@@ -678,19 +178,16 @@
             </div>
         </div>
 
-        <!-- Posts Container -->
         <div id="postsContainer">
-            <!-- Posts will be injected here -->
+            <div class="loading">Loading feed...</div>
         </div>
 
-        <!-- Footer -->
         <div class="footer">
             <p><span>FELT THAT</span> — Nothing is stored. No sign up. No account. No tracking. Just vent.</p>
             <p style="margin-top: 0.5rem;">Posts auto-delete after 24 hours.</p>
         </div>
     </main>
 
-    <!-- Username Setup Modal -->
     <div class="modal-overlay" id="usernameModal">
         <div class="modal">
             <h2 class="modal-title">FELT THAT</h2>
@@ -702,12 +199,25 @@
     </div>
 
     <script>
-        // State
+        // === FIREBASE SETUP ===
+        const firebaseConfig = {
+            apiKey: "AIzaSyDummy",
+            authDomain: "felt-that-cffe5.firebaseapp.com",
+            databaseURL: "https://felt-that-cffe5-default-rtdb.firebaseio.com",
+            projectId: "felt-that-cffe5",
+            storageBucket: "felt-that-cffe5.appspot.com",
+            messagingSenderId: "000000000000",
+            appId: "1:000000000000:web:000000000000"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        // === STATE ===
         let currentUser = null;
         let currentIndustry = 'all';
-        let posts = [];
+        let allPosts = {};
+        let postListenerActive = false;
 
-        // Industry emojis map
         const industryEmojis = {
             all: '🌐', tech: '💻', creative: '🎨', finance: '💰', ecommerce: '🛒',
             healthcare: '🏥', food: '🍕', realestate: '🏠', agency: '📢', other: '📂'
@@ -715,215 +225,127 @@
 
         const defaultEmojis = ['🚀','⚙️','📊','🎓','🏗️','🎯','💼','📱','🔧','🧪','📡','🎪','🏛️','🧬','⚡','🌟','🛸','🎭','🔬','🏗️'];
 
-        // Load custom industries
-        function getCustomIndustries() {
-            return JSON.parse(localStorage.getItem('feltthat_industries') || '[]');
+        // === FIREBASE: LISTEN TO POSTS (REAL-TIME) ===
+        function listenToPosts() {
+            const cutoff = Date.now() - 86400000;
+            db.ref('posts').orderByChild('timestamp').startAt(cutoff).on('value', (snapshot) => {
+                allPosts = snapshot.val() || {};
+                cleanExpiredPosts();
+                renderPosts();
+                updateCounts();
+            });
+            postListenerActive = true;
         }
 
-        function saveCustomIndustries(industries) {
-            localStorage.setItem('feltthat_industries', JSON.stringify(industries));
-        }
-
-        // Add industry
-        function addIndustry() {
-            const name = prompt('Enter industry name:');
-            if (!name || !name.trim()) return;
-
-            const slug = name.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-');
-            const existing = getCustomIndustries();
-            if (existing.includes(slug)) {
-                // Just select it
-                selectIndustry(slug);
-                return;
-            }
-
-            existing.push(slug);
-            saveCustomIndustries(existing);
-
-            // Add tab to DOM
-            const tabs = document.getElementById('industryTabs');
-            const addBtn = tabs.querySelector('.add-tab');
-            const emoji = defaultEmojis[existing.length % defaultEmojis.length];
-            const tab = document.createElement('div');
-            tab.className = 'industry-tab';
-            tab.dataset.industry = slug;
-            tab.onclick = () => selectIndustry(slug);
-            tab.innerHTML = `${emoji} ${name.trim()} <span class="industry-tab-count" id="count-${slug}">0</span>`;
-            tabs.insertBefore(tab, addBtn);
-
-            // Update emoji map
-            industryEmojis[slug] = emoji;
-
-            // Save the display name
-            const names = JSON.parse(localStorage.getItem('feltthat_industry_names') || '{}');
-            names[slug] = name.trim();
-            localStorage.setItem('feltthat_industry_names', JSON.stringify(names));
-
-            selectIndustry(slug);
-            updateCounts();
-        }
-
-        // Rebuild tabs on load (includes custom industries)
-        function rebuildTabs() {
-            const custom = getCustomIndustries();
-            const names = JSON.parse(localStorage.getItem('feltthat_industry_names') || '{}');
-            const tabs = document.getElementById('industryTabs');
-            const addBtn = tabs.querySelector('.add-tab');
-
-            custom.forEach((slug, i) => {
-                if (tabs.querySelector(`[data-industry="${slug}"]`)) return;
-                const emoji = defaultEmojis[i % defaultEmojis.length];
-                industryEmojis[slug] = emoji;
-                const tab = document.createElement('div');
-                tab.className = 'industry-tab';
-                tab.dataset.industry = slug;
-                tab.onclick = () => selectIndustry(slug);
-                tab.innerHTML = `${emoji} ${names[slug] || slug} <span class="industry-tab-count" id="count-${slug}">0</span>`;
-                tabs.insertBefore(tab, addBtn);
+        // === FIREBASE: CLEAN EXPIRED POSTS ===
+        function cleanExpiredPosts() {
+            const cutoff = Date.now() - 86400000;
+            Object.keys(allPosts).forEach(id => {
+                if (allPosts[id].timestamp < cutoff) {
+                    db.ref('posts/' + id).remove();
+                }
             });
         }
 
-        // Initialize
-        document.addEventListener('DOMContentLoaded', () => {
-            checkUsername();
-            rebuildTabs();
-            loadPosts();
-            setupEventListeners();
-        });
+        // === FIREBASE: CREATE POST ===
+        function createPost() {
+            const content = document.getElementById('postContent').value.trim();
+            if (!content || !currentUser) return;
 
-        // Check if user has username
-        function checkUsername() {
-            const savedUser = localStorage.getItem('feltthat_user');
-            if (savedUser) {
-                currentUser = savedUser;
-                updateUI();
-            } else {
-                document.getElementById('usernameModal').classList.add('active');
-            }
+            const postRef = db.ref('posts').push();
+            postRef.set({
+                username: currentUser,
+                industry: currentIndustry === 'all' ? 'other' : currentIndustry,
+                content: content,
+                likes: 0,
+                timestamp: Date.now(),
+                comments: {}
+            });
+
+            document.getElementById('postContent').value = '';
+            document.getElementById('charCount').textContent = '0';
         }
 
-        // Set username
-        function setUsername() {
-            const input = document.getElementById('usernameInput');
-            let username = input.value.trim();
-            
-            if (!username) {
-                username = 'anonymous_' + Math.random().toString(36).substring(2, 6);
-            }
-            
-            // Add random suffix if not already formatted
-            if (!username.includes('_')) {
-                username += '_' + Math.random().toString(36).substring(2, 6);
-            }
-            
-            currentUser = username.toLowerCase().replace(/\s+/g, '_');
-            localStorage.setItem('feltthat_user', currentUser);
-            
-            document.getElementById('usernameModal').classList.remove('active');
-            updateUI();
-        }
-
-        // Update UI with current user
-        function updateUI() {
-            document.getElementById('currentUsername').textContent = currentUser;
-            document.getElementById('composerName').textContent = currentUser;
-            document.getElementById('composerAvatar').textContent = currentUser.charAt(0).toUpperCase();
-        }
-
-        // Load posts from localStorage
-        function loadPosts() {
-            const savedPosts = localStorage.getItem('feltthat_posts');
-            posts = savedPosts ? JSON.parse(savedPosts) : generateSamplePosts();
-            cleanExpiredPosts();
-            renderPosts();
-            updateCounts();
-        }
-
-        // Save posts to localStorage
-        function savePosts() {
-            localStorage.setItem('feltthat_posts', JSON.stringify(posts));
-        }
-
-        // Generate sample posts
-        function generateSamplePosts() {
-            const samplePosts = [
-                {
-                    id: Date.now() - 100000,
-                    username: 'burnedout_dev',
-                    industry: 'tech',
-                    content: "Just spent 6 months building a feature that got cut from the roadmap. Still got my paycheck but man, that one hurt.",
-                    likes: 23,
-                    liked: false,
-                    timestamp: Date.now() - 3600000,
-                    comments: []
-                },
-                {
-                    id: Date.now() - 200000,
-                    username: 'agency_exhausted',
-                    industry: 'creative',
-                    content: "Client ghosted me after I delivered the work. $4k invoice just sitting there. Why do I do this to myself.",
-                    likes: 47,
-                    liked: false,
-                    timestamp: Date.now() - 7200000,
-                    comments: []
-                },
-                {
-                    id: Date.now() - 300000,
-                    username: 'midnight_founder',
-                    industry: 'ecommerce',
-                    content: "My cofounder and I haven't spoken in 3 weeks. The business is fine but the friendship is dead. Success has a cost nobody talks about.",
-                    likes: 89,
-                    liked: false,
-                    timestamp: Date.now() - 14400000,
-                    comments: []
-                },
-                {
-                    id: Date.now() - 400000,
-                    username: 'finance_burned',
-                    industry: 'finance',
-                    content: "Everyone thinks finance is stable. Just got laid off after 8 years. Whole department gone. No warning.",
-                    likes: 112,
-                    liked: false,
-                    timestamp: Date.now() - 21600000,
-                    comments: []
-                },
-                {
-                    id: Date.now() - 500000,
-                    username: 'restaurant_dreams',
-                    industry: 'food',
-                    content: "Opened my dream restaurant. 6 months later, barely breaking even. The Instagram success stories didn't prepare me for this.",
-                    likes: 67,
-                    liked: false,
-                    timestamp: Date.now() - 28800000,
-                    comments: []
+        // === FIREBASE: TOGGLE LIKE ===
+        function toggleLike(postId) {
+            if (!currentUser) return;
+            const likeRef = db.ref('posts/' + postId + '/likers/' + currentUser);
+            likeRef.once('value', (snap) => {
+                if (snap.exists()) {
+                    likeRef.remove();
+                    db.ref('posts/' + postId + '/likes').transaction((count) => (count || 0) - 1);
+                } else {
+                    likeRef.set(true);
+                    db.ref('posts/' + postId + '/likes').transaction((count) => (count || 0) + 1);
                 }
-            ];
-            savePosts();
-            return samplePosts;
+            });
         }
 
-        // Render posts
+        // === FIREBASE: ADD COMMENT ===
+        function addComment(postId) {
+            if (!currentUser) return;
+            const input = document.getElementById('comment-input-' + postId);
+            const text = input.value.trim();
+            if (!text) return;
+
+            db.ref('posts/' + postId + '/comments').push({
+                username: currentUser,
+                text: text,
+                timestamp: Date.now()
+            });
+
+            input.value = '';
+            // Re-open comments after re-render
+            setTimeout(() => {
+                const section = document.getElementById('comments-' + postId);
+                if (section) section.classList.add('open');
+            }, 100);
+        }
+
+        // === FIREBASE: DELETE COMMENT (90s window) ===
+        function deleteComment(postId, commentId) {
+            if (!currentUser) return;
+            db.ref('posts/' + postId + '/comments/' + commentId).once('value', (snap) => {
+                const comment = snap.val();
+                if (!comment) return;
+                const elapsed = (Date.now() - comment.timestamp) / 1000;
+                if (comment.username !== currentUser || elapsed >= 90) return;
+                db.ref('posts/' + postId + '/comments/' + commentId).remove();
+                setTimeout(() => {
+                    const section = document.getElementById('comments-' + postId);
+                    if (section) section.classList.add('open');
+                }, 100);
+            });
+        }
+
+        // === RENDER ===
         function renderPosts() {
             const container = document.getElementById('postsContainer');
-            const filteredPosts = currentIndustry === 'all' 
-                ? posts 
-                : posts.filter(p => p.industry === currentIndustry);
+            const postIds = Object.keys(allPosts);
+            let filtered = postIds.map(id => ({ id, ...allPosts[id] }));
 
-            if (filteredPosts.length === 0) {
+            if (currentIndustry !== 'all') {
+                filtered = filtered.filter(p => p.industry === currentIndustry);
+            }
+
+            filtered.sort((a, b) => b.timestamp - a.timestamp);
+
+            if (filtered.length === 0) {
                 container.innerHTML = `
                     <div class="empty-state">
                         <div class="empty-icon">🦗</div>
                         <div class="empty-title">Nothing here yet</div>
                         <p>Be the first to vent</p>
-                    </div>
-                `;
+                    </div>`;
                 return;
             }
 
-            // Sort by timestamp (newest first)
-            filteredPosts.sort((a, b) => b.timestamp - a.timestamp);
+            container.innerHTML = filtered.map(post => {
+                const commentsArr = post.comments ? Object.entries(post.comments).map(([cid, c]) => ({ cid, ...c })) : [];
+                const isLiked = post.likers && post.likers[currentUser];
+                const emoji = industryEmojis[post.industry] || '📂';
 
-            container.innerHTML = filteredPosts.map(post => `
+                return `
                 <div class="post-card" data-id="${post.id}">
                     <div class="post-header">
                         <div class="avatar">${post.username.charAt(0).toUpperCase()}</div>
@@ -931,247 +353,192 @@
                             <div class="post-username">${post.username}</div>
                             <div class="post-time">${formatTime(post.timestamp)} · <span class="post-timer">⏱ ${formatExpiry(post.timestamp)}</span></div>
                         </div>
-                        <span class="post-industry-tag">${industryEmojis[post.industry]} ${post.industry}</span>
+                        <span class="post-industry-tag">${emoji} ${post.industry}</span>
                     </div>
                     <div class="post-content">${post.content}</div>
                     <div class="post-actions">
-                        <button class="action-btn ${post.liked ? 'liked' : ''}" onclick="toggleLike(${post.id})">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="${post.liked ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2">
+                        <button class="action-btn ${isLiked ? 'liked' : ''}" onclick="toggleLike('${post.id}')">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="${isLiked ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2">
                                 <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
                             </svg>
-                            <span>${post.likes}</span>
+                            <span>${post.likes || 0}</span>
                         </button>
-                        <button class="action-btn" onclick="toggleComments(${post.id})">
+                        <button class="action-btn" onclick="toggleComments('${post.id}')">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
                             </svg>
-                            <span>${post.comments.length}</span>
+                            <span>${commentsArr.length}</span>
                         </button>
                     </div>
                     <div class="comments-section" id="comments-${post.id}">
-                        ${post.comments.map((comment, idx) => {
-                            const isOwn = comment.username === currentUser;
-                            const elapsed = (Date.now() - comment.timestamp) / 1000;
+                        ${commentsArr.map(c => {
+                            const isOwn = c.username === currentUser;
+                            const elapsed = (Date.now() - c.timestamp) / 1000;
                             const canDelete = isOwn && elapsed < 90;
                             return `
                             <div class="comment">
-                                <div class="avatar">${comment.username.charAt(0).toUpperCase()}</div>
+                                <div class="avatar">${c.username.charAt(0).toUpperCase()}</div>
                                 <div class="comment-content">
                                     <div class="comment-header">
-                                        <span class="comment-username">${comment.username}</span>
-                                        <span class="comment-time">${formatTime(comment.timestamp)}</span>
-                                        ${canDelete ? `<span class="comment-actions"><button class="delete-btn" onclick="deleteComment(${post.id}, ${idx})">✕ delete</button></span>` : ''}
+                                        <span class="comment-username">${c.username}</span>
+                                        <span class="comment-time">${formatTime(c.timestamp)}</span>
+                                        ${canDelete ? `<span class="comment-actions"><button class="delete-btn" onclick="deleteComment('${post.id}','${c.cid}')">✕ delete</button></span>` : ''}
                                     </div>
-                                    <div class="comment-text">${comment.text}</div>
+                                    <div class="comment-text">${c.text}</div>
                                 </div>
                             </div>`;
                         }).join('')}
                         <div class="comment-input-wrapper">
-                            <input type="text" id="comment-input-${post.id}" placeholder="Reply..." maxlength="300">
-                            <button class="btn" onclick="addComment(${post.id})">Reply</button>
+                            <input type="text" id="comment-input-${post.id}" placeholder="Reply..." maxlength="300" onkeypress="if(event.key==='Enter')addComment('${post.id}')">
+                            <button class="btn" onclick="addComment('${post.id}')">Reply</button>
                         </div>
                     </div>
-                </div>
-            `).join('');
+                </div>`;
+            }).join('');
         }
 
-        // Update industry counts
         function updateCounts() {
             const counts = {};
-            posts.forEach(post => {
-                counts[post.industry] = (counts[post.industry] || 0) + 1;
+            Object.values(allPosts).forEach(p => {
+                counts[p.industry] = (counts[p.industry] || 0) + 1;
             });
-            
             const allEl = document.getElementById('count-all');
-            if (allEl) allEl.textContent = posts.length;
-            
-            Object.keys(counts).forEach(industry => {
-                const countEl = document.getElementById(`count-${industry}`);
-                if (countEl) {
-                    countEl.textContent = counts[industry];
-                }
+            if (allEl) allEl.textContent = Object.keys(allPosts).length;
+            Object.keys(counts).forEach(ind => {
+                const el = document.getElementById('count-' + ind);
+                if (el) el.textContent = counts[ind];
             });
         }
 
-        // Format timestamp
-        function formatTime(timestamp) {
-            const diff = Date.now() - timestamp;
-            const minutes = Math.floor(diff / 60000);
-            const hours = Math.floor(diff / 3600000);
-            const days = Math.floor(diff / 86400000);
-            
-            if (minutes < 1) return 'Just now';
-            if (minutes < 60) return `${minutes}m ago`;
-            if (hours < 24) return `${hours}h ago`;
-            return `${days}d ago`;
+        // === HELPERS ===
+        function formatTime(ts) {
+            const diff = Date.now() - ts;
+            const m = Math.floor(diff / 60000);
+            const h = Math.floor(diff / 3600000);
+            if (m < 1) return 'Just now';
+            if (m < 60) return m + 'm ago';
+            if (h < 24) return h + 'h ago';
+            return Math.floor(h/24) + 'd ago';
         }
 
-        // Format expiry countdown (24h window)
-        function formatExpiry(timestamp) {
-            const remaining = 86400000 - (Date.now() - timestamp);
+        function formatExpiry(ts) {
+            const remaining = 86400000 - (Date.now() - ts);
             if (remaining <= 0) return 'expired';
-            const hours = Math.floor(remaining / 3600000);
-            const minutes = Math.floor((remaining % 3600000) / 60000);
-            return `${hours}h ${minutes}m left`;
+            const h = Math.floor(remaining / 3600000);
+            const m = Math.floor((remaining % 3600000) / 60000);
+            return h + 'h ' + m + 'm left';
         }
 
-        // Clean up expired posts
-        function cleanExpiredPosts() {
-            const cutoff = Date.now() - 86400000;
-            const before = posts.length;
-            posts = posts.filter(p => p.timestamp > cutoff);
-            if (posts.length < before) savePosts();
+        function toggleComments(postId) {
+            document.getElementById('comments-' + postId).classList.toggle('open');
         }
 
-        // Setup event listeners
-        function setupEventListeners() {
-            // Character counter
-            const postContent = document.getElementById('postContent');
-            postContent.addEventListener('input', () => {
-                const count = postContent.value.length;
+        function selectIndustry(industry) {
+            currentIndustry = industry;
+            document.querySelectorAll('.industry-tab').forEach(t => t.classList.remove('active'));
+            const tab = document.querySelector('.industry-tab[data-industry="' + industry + '"]');
+            if (tab) tab.classList.add('active');
+            renderPosts();
+        }
+
+        function addIndustry() {
+            const name = prompt('Enter industry name:');
+            if (!name || !name.trim()) return;
+            const slug = name.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-');
+            const existing = getCustomIndustries();
+            if (existing.includes(slug)) { selectIndustry(slug); return; }
+            existing.push(slug);
+            saveCustomIndustries(existing);
+            const tabs = document.getElementById('industryTabs');
+            const addBtn = tabs.querySelector('.add-tab');
+            const emoji = defaultEmojis[existing.length % defaultEmojis.length];
+            const tab = document.createElement('div');
+            tab.className = 'industry-tab';
+            tab.dataset.industry = slug;
+            tab.onclick = () => selectIndustry(slug);
+            tab.innerHTML = emoji + ' ' + name.trim() + ' <span class="industry-tab-count" id="count-' + slug + '">0</span>';
+            tabs.insertBefore(tab, addBtn);
+            industryEmojis[slug] = emoji;
+            const names = JSON.parse(localStorage.getItem('feltthat_industry_names') || '{}');
+            names[slug] = name.trim();
+            localStorage.setItem('feltthat_industry_names', JSON.stringify(names));
+            selectIndustry(slug);
+        }
+
+        function getCustomIndustries() { return JSON.parse(localStorage.getItem('feltthat_industries') || '[]'); }
+        function saveCustomIndustries(i) { localStorage.setItem('feltthat_industries', JSON.stringify(i)); }
+
+        function rebuildTabs() {
+            const custom = getCustomIndustries();
+            const names = JSON.parse(localStorage.getItem('feltthat_industry_names') || '{}');
+            const tabs = document.getElementById('industryTabs');
+            const addBtn = tabs.querySelector('.add-tab');
+            custom.forEach((slug, i) => {
+                if (tabs.querySelector('[data-industry="' + slug + '"]')) return;
+                const emoji = defaultEmojis[i % defaultEmojis.length];
+                industryEmojis[slug] = emoji;
+                const tab = document.createElement('div');
+                tab.className = 'industry-tab';
+                tab.dataset.industry = slug;
+                tab.onclick = () => selectIndustry(slug);
+                tab.innerHTML = emoji + ' ' + (names[slug] || slug) + ' <span class="industry-tab-count" id="count-' + slug + '">0</span>';
+                tabs.insertBefore(tab, addBtn);
+            });
+        }
+
+        function refreshPosts() {
+            const btn = document.querySelector('.header-actions .btn-secondary:last-child svg');
+            btn.style.transform = 'rotate(360deg)';
+            setTimeout(() => { btn.style.transform = ''; }, 500);
+            cleanExpiredPosts();
+        }
+
+        // === USERNAME ===
+        function checkUsername() {
+            const saved = localStorage.getItem('feltthat_user');
+            if (saved) { currentUser = saved; updateUI(); }
+            else { document.getElementById('usernameModal').classList.add('active'); }
+        }
+
+        function setUsername() {
+            const input = document.getElementById('usernameInput');
+            let username = input.value.trim();
+            if (!username) username = 'anonymous_' + Math.random().toString(36).substring(2, 6);
+            if (!username.includes('_')) username += '_' + Math.random().toString(36).substring(2, 6);
+            currentUser = username.toLowerCase().replace(/\s+/g, '_');
+            localStorage.setItem('feltthat_user', currentUser);
+            document.getElementById('usernameModal').classList.remove('active');
+            updateUI();
+        }
+
+        function updateUI() {
+            document.getElementById('currentUsername').textContent = currentUser;
+            document.getElementById('composerName').textContent = currentUser;
+            document.getElementById('composerAvatar').textContent = currentUser.charAt(0).toUpperCase();
+        }
+
+        // === INIT ===
+        document.addEventListener('DOMContentLoaded', () => {
+            checkUsername();
+            rebuildTabs();
+            listenToPosts();
+
+            document.getElementById('postContent').addEventListener('input', function() {
+                const count = this.value.length;
                 document.getElementById('charCount').textContent = count;
-                
-                if (count > 500) {
-                    postContent.value = postContent.value.substring(0, 500);
-                }
+                if (count > 500) this.value = this.value.substring(0, 500);
             });
 
-            // Enter key for username
             document.getElementById('usernameInput').addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') setUsername();
             });
-        }
 
-        // Select industry
-        function selectIndustry(industry) {
-            currentIndustry = industry;
-            
-            document.querySelectorAll('.industry-tab').forEach(tab => tab.classList.remove('active'));
-            document.querySelector(`.industry-tab[data-industry="${industry}"]`).classList.add('active');
-            
-            renderPosts();
-        }
+            // Update expiry timers every minute
+            setInterval(() => { renderPosts(); }, 60000);
+        });
 
-        // Create post
-        function createPost() {
-            const content = document.getElementById('postContent').value.trim();
-            if (!content) return;
-
-            const newPost = {
-                id: Date.now(),
-                username: currentUser,
-                industry: currentIndustry === 'all' ? 'other' : currentIndustry,
-                content: content,
-                likes: 0,
-                liked: false,
-                timestamp: Date.now(),
-                comments: []
-            };
-
-            posts.unshift(newPost);
-            savePosts();
-            renderPosts();
-            updateCounts();
-
-            // Track post in analytics
-            const aKey = 'feltthat_analytics';
-            const aData = JSON.parse(localStorage.getItem(aKey) || '{"visits":[],"posts":[],"dailyVisits":{}}');
-            aData.posts.push(Date.now());
-            localStorage.setItem(aKey, JSON.stringify(aData));
-            try { fetch('https://api.counterapi.dev/v1/felt-that/posts/up'); } catch(e) {}
-            
-            document.getElementById('postContent').value = '';
-            document.getElementById('charCount').textContent = '0';
-        }
-
-        // Toggle like
-        function toggleLike(postId) {
-            const post = posts.find(p => p.id === postId);
-            if (!post) return;
-
-            post.liked = !post.liked;
-            post.likes += post.liked ? 1 : -1;
-            
-            savePosts();
-            renderPosts();
-        }
-
-        // Toggle comments
-        function toggleComments(postId) {
-            const commentsSection = document.getElementById(`comments-${postId}`);
-            commentsSection.classList.toggle('open');
-        }
-
-        // Add comment
-        function addComment(postId) {
-            const input = document.getElementById(`comment-input-${postId}`);
-            const text = input.value.trim();
-            if (!text) return;
-
-            const post = posts.find(p => p.id === postId);
-            if (!post) return;
-
-            post.comments.push({
-                username: currentUser,
-                text: text,
-                timestamp: Date.now()
-            });
-
-            savePosts();
-            renderPosts();
-            
-            setTimeout(() => {
-                document.getElementById(`comments-${postId}`).classList.add('open');
-            }, 10);
-        }
-
-        // Delete comment (60 second limit)
-        function deleteComment(postId, commentIdx) {
-            const post = posts.find(p => p.id === postId);
-            if (!post) return;
-
-            const comment = post.comments[commentIdx];
-            if (!comment) return;
-
-            const elapsed = (Date.now() - comment.timestamp) / 1000;
-            if (comment.username !== currentUser || elapsed >= 90) return;
-
-            post.comments.splice(commentIdx, 1);
-            savePosts();
-            renderPosts();
-
-            setTimeout(() => {
-                document.getElementById(`comments-${postId}`).classList.add('open');
-            }, 10);
-        }
-
-        // Refresh posts
-        function refreshPosts() {
-            loadPosts();
-            
-            // Visual feedback
-            const btn = document.querySelector('.header-actions .btn-secondary:last-child svg');
-            btn.style.transform = 'rotate(360deg)';
-            setTimeout(() => {
-                btn.style.transform = '';
-            }, 500);
-        }
-
-        // === Analytics Tracking ===
-        function recordVisit() {
-            const key = 'feltthat_analytics';
-            const data = JSON.parse(localStorage.getItem(key) || '{"visits":[],"posts":[],"dailyVisits":{}}');
-            const now = Date.now();
-            data.visits.push(now);
-            const today = new Date().toISOString().split('T')[0];
-            data.dailyVisits[today] = (data.dailyVisits[today] || 0) + 1;
-            const cutoff = now - (90 * 86400000);
-            data.visits = data.visits.filter(t => t > cutoff);
-            localStorage.setItem(key, JSON.stringify(data));
-            // Remote counter
-            try { fetch('https://api.counterapi.dev/v1/felt-that/visits/up'); } catch(e) {}
-        }
-        recordVisit();
+        // Analytics ping
+        try { fetch('https://api.counterapi.dev/v1/felt-that/visits/up'); } catch(e) {}
     </script>
 </body>
 </html>
