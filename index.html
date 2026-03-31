@@ -284,6 +284,14 @@
             font-weight: 600;
         }
 
+        .post-timer{
+            font-size: 0.75rem;
+            color: var(--danger);
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
         .post-time{
             font-size: 0.75rem;
             color: var(--text-muted);
@@ -719,6 +727,7 @@
         function loadPosts() {
             const savedPosts = localStorage.getItem('feltthat_posts');
             posts = savedPosts ? JSON.parse(savedPosts) : generateSamplePosts();
+            cleanExpiredPosts();
             renderPosts();
             updateCounts();
         }
@@ -813,7 +822,7 @@
                         <div class="avatar">${post.username.charAt(0).toUpperCase()}</div>
                         <div class="post-meta">
                             <div class="post-username">${post.username}</div>
-                            <div class="post-time">${formatTime(post.timestamp)}</div>
+                            <div class="post-time">${formatTime(post.timestamp)} · <span class="post-timer">⏱ ${formatExpiry(post.timestamp)}</span></div>
                         </div>
                         <span class="post-industry-tag">${industryEmojis[post.industry]} ${post.industry}</span>
                     </div>
@@ -888,6 +897,23 @@
             if (minutes < 60) return `${minutes}m ago`;
             if (hours < 24) return `${hours}h ago`;
             return `${days}d ago`;
+        }
+
+        // Format expiry countdown (24h window)
+        function formatExpiry(timestamp) {
+            const remaining = 86400000 - (Date.now() - timestamp);
+            if (remaining <= 0) return 'expired';
+            const hours = Math.floor(remaining / 3600000);
+            const minutes = Math.floor((remaining % 3600000) / 60000);
+            return `${hours}h ${minutes}m left`;
+        }
+
+        // Clean up expired posts
+        function cleanExpiredPosts() {
+            const cutoff = Date.now() - 86400000;
+            const before = posts.length;
+            posts = posts.filter(p => p.timestamp > cutoff);
+            if (posts.length < before) savePosts();
         }
 
         // Setup event listeners
