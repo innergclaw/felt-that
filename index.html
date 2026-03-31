@@ -109,6 +109,36 @@
         .comment-input-wrapper input:focus { outline: none; border-color: var(--accent); }
         .comment-input-wrapper .btn { padding: 0.625rem 1rem; font-size: 0.8125rem; }
 
+        /* Reply chains */
+        .reply-btn { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 0.75rem; font-family: inherit; padding: 2px 0; transition: color 0.2s; }
+        .reply-btn:hover { color: var(--accent); }
+        .replies { margin-left: 2.5rem; padding-left: 1rem; border-left: 2px solid var(--border); margin-top: 0.5rem; }
+        .replies .comment { margin-bottom: 0.75rem; }
+        .replies .avatar { width: 26px; height: 26px; font-size: 0.65rem; }
+        .reply-to-preview { font-size: 0.75rem; color: var(--accent); margin-bottom: 0.25rem; display: flex; align-items: center; gap: 0.375rem; }
+        .reply-to-preview button { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 0.875rem; line-height: 1; }
+        .reply-to-preview button:hover { color: var(--danger); }
+        .reply-input-wrapper { display: flex; gap: 0.5rem; margin-top: 0.5rem; margin-bottom: 0.5rem; }
+        .reply-input-wrapper input { flex: 1; background: var(--bg-tertiary); border: 1px solid var(--border); border-radius: 8px; padding: 0.5rem 0.75rem; color: var(--text-primary); font-family: inherit; font-size: 0.8125rem; }
+        .reply-input-wrapper input:focus { outline: none; border-color: var(--accent); }
+        .reply-input-wrapper .btn { padding: 0.5rem 0.75rem; font-size: 0.75rem; }
+
+        /* Notifications */
+        .notif-wrapper { position: relative; }
+        .notif-btn { position: relative; background: none; border: none; color: var(--text-secondary); cursor: pointer; padding: 0.25rem; }
+        .notif-btn:hover { color: var(--text-primary); }
+        .notif-badge { position: absolute; top: -4px; right: -4px; background: var(--accent); color: white; font-size: 0.625rem; font-weight: 700; width: 16px; height: 16px; border-radius: 50%; display: flex; align-items: center; justify-content: center; display: none; }
+        .notif-badge.active { display: flex; }
+        .notif-dropdown { position: absolute; top: 100%; right: 0; width: 300px; max-height: 360px; overflow-y: auto; background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.12); z-index: 200; display: none; margin-top: 0.5rem; }
+        .notif-dropdown.open { display: block; }
+        .notif-item { padding: 0.75rem 1rem; border-bottom: 1px solid var(--border); cursor: default; }
+        .notif-item:last-child { border-bottom: none; }
+        .notif-item-text { font-size: 0.8125rem; color: var(--text-primary); line-height: 1.4; }
+        .notif-item-text strong { font-weight: 600; }
+        .notif-item-time { font-size: 0.6875rem; color: var(--text-muted); margin-top: 0.125rem; }
+        .notif-item.unread { background: rgba(249,115,22,0.05); }
+        .notif-empty { padding: 2rem 1rem; text-align: center; font-size: 0.8125rem; color: var(--text-muted); }
+
         .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; opacity: 0; visibility: hidden; transition: all 0.3s; }
         .modal-overlay.active { opacity: 1; visibility: visible; }
         .modal { background: var(--bg-primary); border: 1px solid var(--border); border-radius: 16px; padding: 2.5rem; max-width: 420px; width: 90%; transform: translateY(20px); transition: transform 0.3s; }
@@ -155,6 +185,15 @@
             </div>
             <div class="header-actions">
                 <div class="user-badge"><span id="currentUsername">anonymous</span></div>
+                <div class="notif-wrapper">
+                    <button class="notif-btn" onclick="toggleNotifs()">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 0 1-3.46 0"/>
+                        </svg>
+                        <div class="notif-badge" id="notifBadge">0</div>
+                    </button>
+                    <div class="notif-dropdown" id="notifDropdown"></div>
+                </div>
                 <button class="btn btn-secondary" id="themeToggle" onclick="toggleTheme()" title="Toggle dark mode">
                     <svg id="themeIconLight" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none">
                         <circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
@@ -333,20 +372,122 @@
         }
 
         // === FIREBASE: ADD COMMENT ===
+        let activeReplyTo = null; // { postId, commentId, username }
+
         function addComment(postId) {
             if (!currentUser) return;
             const input = document.getElementById('comment-input-' + postId);
             const text = input.value.trim();
             if (!text) return;
-            openComments.add(postId); // Keep section open after posting
-            db.ref('posts/' + postId + '/comments').push({
+            openComments.add(postId);
+            const commentData = {
                 username: currentUser,
                 text: text,
                 timestamp: Date.now()
-            });
-
+            };
+            if (activeReplyTo && activeReplyTo.postId === postId) {
+                commentData.replyTo = activeReplyTo.commentId;
+                commentData.replyToUser = activeReplyTo.username;
+                activeReplyTo = null;
+            }
+            db.ref('posts/' + postId + '/comments').push(commentData);
             input.value = '';
         }
+
+        function startReply(postId, commentId, username) {
+            activeReplyTo = { postId, commentId, username };
+            const input = document.getElementById('comment-input-' + postId);
+            input.focus();
+            input.placeholder = `Replying to @${username}...`;
+            // Show cancel
+            let preview = document.getElementById('reply-preview-' + postId);
+            if (!preview) {
+                preview = document.createElement('div');
+                preview.id = 'reply-preview-' + postId;
+                preview.className = 'reply-to-preview';
+                input.parentElement.before(preview);
+            }
+            preview.innerHTML = `↩ Replying to <strong>@${username}</strong> <button onclick="cancelReply('${postId}')">✕</button>`;
+        }
+
+        function cancelReply(postId) {
+            activeReplyTo = null;
+            const input = document.getElementById('comment-input-' + postId);
+            if (input) input.placeholder = 'Reply...';
+            const preview = document.getElementById('reply-preview-' + postId);
+            if (preview) preview.remove();
+        }
+
+        // === NOTIFICATIONS ===
+        let notifications = [];
+        let lastSeenNotifs = JSON.parse(localStorage.getItem('feltthat_notifs_seen') || '[]');
+
+        function listenForNotifs() {
+            db.ref('posts').on('child_changed', (snap) => {
+                const post = snap.val();
+                if (!post || !post.comments) return;
+                const postId = snap.key;
+                // Only notify for posts by current user
+                if (post.username !== currentUser) return;
+                const comments = Object.entries(post.comments);
+                comments.forEach(([cid, c]) => {
+                    const key = cid;
+                    if (lastSeenNotifs.includes(key)) return;
+                    if (c.username === currentUser) return; // Don't notify self
+                    notifications.unshift({
+                        key,
+                        postId,
+                        username: c.username,
+                        text: (c.text || '').substring(0, 60),
+                        replyToUser: c.replyToUser,
+                        timestamp: c.timestamp
+                    });
+                    updateNotifBadge();
+                });
+            });
+        }
+
+        function updateNotifBadge() {
+            const unread = notifications.filter(n => !lastSeenNotifs.includes(n.key));
+            const badge = document.getElementById('notifBadge');
+            if (unread.length > 0) {
+                badge.textContent = unread.length > 9 ? '9+' : unread.length;
+                badge.classList.add('active');
+            } else {
+                badge.classList.remove('active');
+            }
+        }
+
+        function toggleNotifs() {
+            const dd = document.getElementById('notifDropdown');
+            if (dd.classList.contains('open')) {
+                dd.classList.remove('open');
+                return;
+            }
+            dd.classList.add('open');
+            // Mark all as seen
+            notifications.forEach(n => { if (!lastSeenNotifs.includes(n.key)) lastSeenNotifs.push(n.key); });
+            localStorage.setItem('feltthat_notifs_seen', JSON.stringify(lastSeenNotifs));
+            updateNotifBadge();
+            // Render
+            if (notifications.length === 0) {
+                dd.innerHTML = '<div class="notif-empty">No notifications yet</div>';
+            } else {
+                dd.innerHTML = notifications.slice(0, 20).map(n => {
+                    const replyCtx = n.replyToUser ? ` (replying to @${n.replyToUser})` : '';
+                    return `<div class="notif-item">
+                        <div class="notif-item-text"><strong>@${n.username}</strong> commented${replyCtx}: "${n.text}${n.text.length >= 60 ? '...' : ''}"</div>
+                        <div class="notif-item-time">${formatTime(n.timestamp)}</div>
+                    </div>`;
+                }).join('');
+            }
+        }
+
+        // Close dropdown on outside click
+        document.addEventListener('click', (e) => {
+            const dd = document.getElementById('notifDropdown');
+            if (dd && !e.target.closest('.notif-wrapper')) dd.classList.remove('open');
+        });
 
         // === FIREBASE: DELETE COMMENT (45s window) ===
         function deleteComment(postId, commentId) {
@@ -386,8 +527,35 @@
                 const commentsArr = post.comments ? Object.entries(post.comments).map(([cid, c]) => ({ cid, ...c })) : [];
                 const isLiked = post.likers && post.likers[currentUser];
                 const emoji = industryEmojis[post.industry] || '📂';
-                // Auto-open comments section if it was previously open
                 const wasOpen = openComments.has(post.id);
+
+                // Separate root comments and replies
+                const rootComments = commentsArr.filter(c => !c.replyTo);
+                const replyMap = {};
+                commentsArr.filter(c => c.replyTo).forEach(r => {
+                    if (!replyMap[r.replyTo]) replyMap[r.replyTo] = [];
+                    replyMap[r.replyTo].push(r);
+                });
+
+                function renderComment(c, isReply) {
+                    const isOwn = c.username === currentUser;
+                    const replies = replyMap[c.cid] || [];
+                    return `
+                    <div class="comment" data-comment-ts="${c.timestamp}" data-comment-user="${c.username}" data-post-id="${post.id}" data-comment-id="${c.cid}">
+                        <div class="avatar">${c.username.charAt(0).toUpperCase()}</div>
+                        <div class="comment-content">
+                            <div class="comment-header">
+                                <span class="comment-username">${c.username}</span>
+                                <span class="comment-time">${formatTime(c.timestamp)}</span>
+                                ${isOwn ? `<span class="comment-actions"><button class="delete-btn" data-delete-btn data-post-id="${post.id}" data-comment-id="${c.cid}" data-comment-ts="${c.timestamp}">✕ delete</button></span>` : ''}
+                                ${!isReply ? `<button class="reply-btn" onclick="startReply('${post.id}','${c.cid}','${c.username}')">Reply</button>` : ''}
+                            </div>
+                            ${c.replyToUser ? `<div style="font-size:0.7rem;color:var(--accent);margin-bottom:0.2rem">↩ ${c.replyToUser}</div>` : ''}
+                            <div class="comment-text">${c.text}</div>
+                            ${replies.length > 0 ? `<div class="replies">${replies.map(r => renderComment(r, true)).join('')}</div>` : ''}
+                        </div>
+                    </div>`;
+                }
 
                 return `
                 <div class="post-card" data-id="${post.id}">
@@ -415,21 +583,7 @@
                         </button>
                     </div>
                     <div class="comments-section ${wasOpen ? 'open' : ''}" id="comments-${post.id}">
-                        ${commentsArr.map(c => {
-                            const isOwn = c.username === currentUser;
-                            return `
-                            <div class="comment" data-comment-ts="${c.timestamp}" data-comment-user="${c.username}" data-post-id="${post.id}" data-comment-id="${c.cid}">
-                                <div class="avatar">${c.username.charAt(0).toUpperCase()}</div>
-                                <div class="comment-content">
-                                    <div class="comment-header">
-                                        <span class="comment-username">${c.username}</span>
-                                        <span class="comment-time">${formatTime(c.timestamp)}</span>
-                                        ${isOwn ? `<span class="comment-actions"><button class="delete-btn" data-delete-btn data-post-id="${post.id}" data-comment-id="${c.cid}" data-comment-ts="${c.timestamp}">✕ delete</button></span>` : ''}
-                                    </div>
-                                    <div class="comment-text">${c.text}</div>
-                                </div>
-                            </div>`;
-                        }).join('')}
+                        ${rootComments.map(c => renderComment(c, false)).join('')}
                         <div class="comment-input-wrapper">
                             <input type="text" id="comment-input-${post.id}" placeholder="Reply..." maxlength="300" onkeypress="if(event.key==='Enter')addComment('${post.id}')">
                             <button class="btn" onclick="addComment('${post.id}')">Reply</button>
@@ -662,6 +816,9 @@
             // Live stats
             updateLiveStats();
             db.ref('posts').on('value', () => updateLiveStats());
+
+            // Notifications
+            listenForNotifs();
         }
 
         function updateLiveStats() {
