@@ -107,6 +107,12 @@
 
         .footer { text-align: center; padding: 3rem 2rem 2rem; color: var(--text-muted); font-size: 0.75rem; }
         .footer span { color: var(--accent); font-weight: 600; }
+        .live-stats { display: flex; justify-content: center; gap: 1.5rem; padding: 0.625rem 1rem; background: rgba(249,115,22,0.04); border-bottom: 1px solid var(--border); }
+        .live-stat { text-align: center; }
+        .live-stat .num { font-size: 1rem; font-weight: 700; color: var(--accent); font-family: 'JetBrains Mono', monospace; }
+        .live-stat .lbl { font-size: 0.625rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+        .live-dot { display: inline-block; width: 6px; height: 6px; background: #22c55e; border-radius: 50%; margin-right: 4px; animation: pulse 2s ease-in-out infinite; }
+        @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
 
         .empty-state { text-align: center; padding: 4rem 2rem; color: var(--text-secondary); }
         .empty-icon { font-size: 3rem; margin-bottom: 1rem; }
@@ -142,6 +148,14 @@
             </div>
         </div>
     </header>
+
+    <!-- Live Stats Bar -->
+    <div class="live-stats" id="liveStats">
+        <div class="live-stat"><div class="num" id="statUsers">0</div><div class="lbl"><span class="live-dot"></span>Users</div></div>
+        <div class="live-stat"><div class="num" id="statPosts">0</div><div class="lbl">Posts</div></div>
+        <div class="live-stat"><div class="num" id="statLikes">0</div><div class="lbl">Likes</div></div>
+        <div class="live-stat"><div class="num" id="statComments">0</div><div class="lbl">Comments</div></div>
+    </div>
 
     <main class="feed">
         <div class="feed-header">
@@ -601,6 +615,39 @@
             });
 
             setInterval(() => { renderPosts(); }, 60000);
+
+            // Live stats
+            updateLiveStats();
+            db.ref('posts').on('value', () => updateLiveStats());
+        }
+
+        function updateLiveStats() {
+            db.ref('posts').once('value', (snap) => {
+                const data = snap.val();
+                if (!data) return;
+                const posts = Object.values(data);
+                let users = new Set();
+                let totalLikes = 0;
+                let totalComments = 0;
+                posts.forEach(p => {
+                    if (p.username) users.add(p.username);
+                    totalLikes += (p.likes || 0);
+                    if (p.comments) {
+                        Object.values(p.comments).forEach(c => {
+                            if (c.username) users.add(c.username);
+                        });
+                        totalComments += Object.keys(p.comments).length;
+                    }
+                });
+                // Also count likers
+                posts.forEach(p => {
+                    if (p.likers) Object.keys(p.likers).forEach(u => users.add(u));
+                });
+                document.getElementById('statUsers').textContent = users.size;
+                document.getElementById('statPosts').textContent = posts.length;
+                document.getElementById('statLikes').textContent = totalLikes;
+                document.getElementById('statComments').textContent = totalComments;
+            });
         }
 
         // Analytics tracking - record visit to localStorage for dashboard
