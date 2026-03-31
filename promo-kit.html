@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FELT THAT — Promo Kit</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: #111; color: #fff; padding: 2rem; }
+        h1 { text-align: center; margin-bottom: 3rem; font-size: 1.5rem; color: #f97316; }
+        .kit { max-width: 1400px; margin: 0 auto; }
+        .item { margin-bottom: 4rem; text-align: center; }
+        .label { font-family: 'JetBrains Mono', monospace; font-size: 0.875rem; color: #888; margin-bottom: 1rem; }
+        .frame { display: inline-block; border: 1px solid #333; border-radius: 12px; overflow: hidden; }
+        .download-link { display: inline-block; margin-top: 1rem; color: #f97316; text-decoration: none; font-size: 0.875rem; }
+
+        /* === INSTAGRAM POST 1080x1080 === */
+        .ig-post { width: 540px; height: 540px; background: #0a0a0a; position: relative; overflow: hidden; }
+        .ig-post .orb1 { position: absolute; width: 300px; height: 300px; background: radial-gradient(circle, rgba(249,115,22,0.3), transparent 70%); top: -50px; right: -50px; }
+        .ig-post .orb2 { position: absolute; width: 200px; height: 200px; background: radial-gradient(circle, rgba(249,115,22,0.15), transparent 70%); bottom: -30px; left: -30px; }
+        .ig-post .grid { position: absolute; inset: 0; background-image: linear-gradient(rgba(249,115,22,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(249,115,22,0.04) 1px, transparent 1px); background-size: 40px 40px; }
+        .ig-post .content { position: relative; z-index: 2; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 3rem; }
+        .ig-post .tag { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; color: #f97316; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 1.5rem; }
+        .ig-post .title { font-size: 4.5rem; font-weight: 900; line-height: 0.9; letter-spacing: -3px; }
+        .ig-post .title span { color: #f97316; }
+        .ig-post .sub { margin-top: 1.5rem; font-size: 1rem; color: #888; letter-spacing: 2px; }
+        .ig-post .line { width: 60px; height: 3px; background: #f97316; margin-top: 2rem; border-radius: 2px; }
+        .ig-post .bottom { position: absolute; bottom: 2rem; left: 0; right: 0; text-align: center; font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; color: #555; letter-spacing: 1px; }
+
+        /* === INSTAGRAM STORY 1080x1920 === */
+        .ig-story { width: 360px; height: 640px; background: #0a0a0a; position: relative; overflow: hidden; }
+        .ig-story .glow { position: absolute; top: 15%; left: 50%; transform: translateX(-50%); width: 350px; height: 350px; background: radial-gradient(circle, rgba(249,115,22,0.25), transparent 70%); }
+        .ig-story .particles { position: absolute; inset: 0; }
+        .ig-story .dot { position: absolute; width: 2px; height: 2px; background: #f97316; border-radius: 50%; opacity: 0.4; }
+        .ig-story .content { position: relative; z-index: 2; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2rem; }
+        .ig-story .tag { font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; color: #f97316; letter-spacing: 4px; text-transform: uppercase; margin-bottom: 2rem; }
+        .ig-story .title { font-size: 3.5rem; font-weight: 900; line-height: 0.9; letter-spacing: -2px; }
+        .ig-story .title span { color: #f97316; }
+        .ig-story .desc { margin-top: 2rem; font-size: 0.9rem; color: #666; line-height: 1.8; text-align: center; max-width: 280px; }
+        .ig-story .features { margin-top: 2.5rem; display: flex; flex-direction: column; gap: 0.75rem; }
+        .ig-story .feat { display: flex; align-items: center; gap: 0.75rem; font-size: 0.8rem; color: #aaa; }
+        .ig-story .feat .dot-icon { width: 6px; height: 6px; background: #f97316; border-radius: 50%; flex-shrink: 0; }
+        .ig-story .cta-box { margin-top: 3rem; border: 1px solid rgba(249,115,22,0.3); border-radius: 30px; padding: 0.75rem 2rem; font-size: 0.8rem; color: #f97316; font-weight: 600; }
+        .ig-story .bottom { position: absolute; bottom: 1.5rem; left: 0; right: 0; text-align: center; font-family: 'JetBrains Mono', monospace; font-size: 0.55rem; color: #444; }
+
+        /* === TWITTER POST 1600x900 === */
+        .tw-post { width: 720px; height: 405px; background: #0a0a0a; position: relative; overflow: hidden; display: flex; }
+        .tw-post .left { flex: 1; display: flex; flex-direction: column; justify-content: center; padding: 3rem; position: relative; z-index: 2; }
+        .tw-post .right { width: 45%; position: relative; overflow: hidden; }
+        .tw-post .glow-r { position: absolute; top: -20%; right: -20%; width: 400px; height: 400px; background: radial-gradient(circle, rgba(249,115,22,0.2), transparent 70%); }
+        .tw-post .grid-r { position: absolute; inset: 0; background-image: linear-gradient(rgba(249,115,22,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(249,115,22,0.05) 1px, transparent 1px); background-size: 30px 30px; }
+        .tw-post .phone-mini { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(5deg); width: 120px; height: 260px; background: #fff; border-radius: 18px; box-shadow: 0 20px 60px rgba(0,0,0,0.5); overflow: hidden; }
+        .tw-post .phone-mini .pm-header { height: 30px; background: #fafafa; border-bottom: 1px solid #eee; display: flex; align-items: center; justify-content: center; }
+        .tw-post .phone-mini .pm-title { font-size: 0.45rem; font-weight: 700; color: #000; }
+        .tw-post .phone-mini .pm-body { padding: 0.5rem; }
+        .tw-post .phone-mini .pm-line { height: 4px; background: #f0f0f0; border-radius: 2px; margin-bottom: 4px; }
+        .tw-post .phone-mini .pm-line:nth-child(2) { width: 70%; }
+        .tw-post .phone-mini .pm-line:nth-child(3) { width: 85%; }
+        .tw-post .phone-mini .pm-post { margin-top: 0.5rem; background: #fafafa; border-radius: 6px; padding: 0.4rem; }
+        .tw-post .phone-mini .pm-post .pm-line { margin-bottom: 3px; height: 3px; }
+        .tw-post .tag { font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; color: #f97316; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 1rem; }
+        .tw-post .title { font-size: 2.8rem; font-weight: 900; line-height: 0.95; letter-spacing: -2px; }
+        .tw-post .title span { color: #f97316; }
+        .tw-post .desc { margin-top: 1rem; font-size: 0.85rem; color: #777; line-height: 1.6; max-width: 300px; }
+        .tw-post .url { margin-top: 1.5rem; font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; color: #f97316; }
+
+        /* === TIKTOK COVER 1080x1920 === */
+        .tt-cover { width: 360px; height: 640px; background: #000; position: relative; overflow: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .tt-cover .orb { position: absolute; top: 25%; left: 50%; transform: translateX(-50%); width: 400px; height: 400px; background: radial-gradient(circle, rgba(249,115,22,0.2) 0%, rgba(249,115,22,0.05) 40%, transparent 70%); }
+        .tt-cover .ring1 { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 250px; height: 250px; border: 1px solid rgba(249,115,22,0.1); border-radius: 50%; }
+        .tt-cover .ring2 { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 350px; height: 350px; border: 1px solid rgba(249,115,22,0.05); border-radius: 50%; }
+        .tt-cover .content { position: relative; z-index: 2; text-align: center; }
+        .tt-cover .icon { font-size: 2rem; margin-bottom: 2rem; }
+        .tt-cover .title { font-size: 4rem; font-weight: 900; line-height: 0.85; letter-spacing: -3px; }
+        .tt-cover .title span { color: #f97316; }
+        .tt-cover .sub { margin-top: 2rem; font-size: 0.85rem; color: #555; letter-spacing: 3px; text-transform: uppercase; }
+        .tt-cover .divider { width: 40px; height: 2px; background: #f97316; margin: 2rem auto; }
+        .tt-cover .desc { font-size: 0.8rem; color: #666; line-height: 1.7; max-width: 240px; }
+        .tt-cover .bottom { position: absolute; bottom: 2rem; font-family: 'JetBrains Mono', monospace; font-size: 0.55rem; color: #333; }
+
+        @media (max-width: 800px) {
+            .frame { display: flex; justify-content: center; }
+            .ig-post, .ig-story, .tw-post, .tt-cover { transform: scale(0.75); transform-origin: top center; margin-bottom: -100px; }
+            .tw-post { transform: scale(0.5); margin-bottom: -160px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="kit">
+        <h1>FELT THAT — Social Media Promo Kit</h1>
+
+        <!-- Instagram Post -->
+        <div class="item">
+            <div class="label">Instagram Post — 1080×1080</div>
+            <div class="frame">
+                <div class="ig-post">
+                    <div class="orb1"></div>
+                    <div class="orb2"></div>
+                    <div class="grid"></div>
+                    <div class="content">
+                        <div class="tag">// anonymous venting</div>
+                        <div class="title">FELT<br><span>THAT</span></div>
+                        <div class="sub">VENT · DELETE · REPEAT</div>
+                        <div class="line"></div>
+                    </div>
+                    <div class="bottom">No sign up · No account · Posts auto-delete in 24h</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Instagram Story -->
+        <div class="item">
+            <div class="label">Instagram Story — 1080×1920</div>
+            <div class="frame">
+                <div class="ig-story">
+                    <div class="glow"></div>
+                    <div class="particles">
+                        <div class="dot" style="top:10%;left:20%"></div>
+                        <div class="dot" style="top:25%;left:75%"></div>
+                        <div class="dot" style="top:40%;left:15%"></div>
+                        <div class="dot" style="top:55%;left:80%"></div>
+                        <div class="dot" style="top:70%;left:30%"></div>
+                        <div class="dot" style="top:85%;left:65%"></div>
+                        <div class="dot" style="top:15%;left:50%"></div>
+                        <div class="dot" style="top:60%;left:45%"></div>
+                    </div>
+                    <div class="content">
+                        <div class="tag">// launching 2026</div>
+                        <div class="title">FELT<br><span>THAT</span></div>
+                        <div class="desc">The anonymous venting platform for entrepreneurs who need to let it out.</div>
+                        <div class="features">
+                            <div class="feat"><span class="dot-icon"></span> 100% Anonymous</div>
+                            <div class="feat"><span class="dot-icon"></span> 24-Hour Auto-Delete</div>
+                            <div class="feat"><span class="dot-icon"></span> Industry Timelines</div>
+                            <div class="feat"><span class="dot-icon"></span> Real-Time Sync</div>
+                        </div>
+                        <div class="cta-box">🔗 Launch App</div>
+                    </div>
+                    <div class="bottom">innergclaw.github.io/felt-that</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Twitter/X Post -->
+        <div class="item">
+            <div class="label">Twitter / X Post — 1600×900</div>
+            <div class="frame">
+                <div class="tw-post">
+                    <div class="left">
+                        <div class="tag">// for founders</div>
+                        <div class="title">FELT<br><span>THAT</span></div>
+                        <div class="desc">Anonymous venting for entrepreneurs. No sign up. No account. Posts disappear in 24 hours. Just raw, real talk.</div>
+                        <div class="url">innergclaw.github.io/felt-that</div>
+                    </div>
+                    <div class="right">
+                        <div class="glow-r"></div>
+                        <div class="grid-r"></div>
+                        <div class="phone-mini">
+                            <div class="pm-header"><span class="pm-title">FELT THAT</span></div>
+                            <div class="pm-body">
+                                <div class="pm-line"></div>
+                                <div class="pm-line"></div>
+                                <div class="pm-line"></div>
+                                <div class="pm-post">
+                                    <div class="pm-line" style="width:90%"></div>
+                                    <div class="pm-line" style="width:60%"></div>
+                                </div>
+                                <div class="pm-post">
+                                    <div class="pm-line" style="width:80%"></div>
+                                    <div class="pm-line" style="width:70%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TikTok Cover -->
+        <div class="item">
+            <div class="label">TikTok Video Cover — 1080×1920</div>
+            <div class="frame">
+                <div class="tt-cover">
+                    <div class="orb"></div>
+                    <div class="ring1"></div>
+                    <div class="ring2"></div>
+                    <div class="content">
+                        <div class="icon">💬</div>
+                        <div class="title">FELT<br><span>THAT</span></div>
+                        <div class="sub">Posts disappear in 24h</div>
+                        <div class="divider"></div>
+                        <div class="desc">No sign up. No account.<br>No judgment. Just vent.</div>
+                    </div>
+                    <div class="bottom">become intelligence · innerg intel</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
