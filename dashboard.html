@@ -311,9 +311,9 @@
                 <div class="stat-change up" id="totalChange">—</div>
             </div>
             <div class="stat-card">
-                <div class="stat-label">Today</div>
-                <div class="stat-value" id="todayVisits">0</div>
-                <div class="stat-change up" id="todayChange">—</div>
+                <div class="stat-label">Unique Users</div>
+                <div class="stat-value" id="uniqueUsers">0</div>
+                <div class="stat-change" id="usersChange">—</div>
             </div>
             <div class="stat-card">
                 <div class="stat-label">Posts Created</div>
@@ -321,17 +321,17 @@
                 <div class="stat-change" id="postsChange">—</div>
             </div>
             <div class="stat-card">
-                <div class="stat-label">Avg. Session</div>
-                <div class="stat-value" id="avgSession">0s</div>
-                <div class="stat-change" id="sessionChange">—</div>
+                <div class="stat-label">Total Likes</div>
+                <div class="stat-value" id="totalLikes">0</div>
+                <div class="stat-change" id="likesChange">—</div>
             </div>
         </div>
 
         <!-- Visits Chart -->
-        <div class="section-title">Traffic (Last 7 Days)</div>
+        <div class="section-title">Posts (Last 7 Days)</div>
         <div class="chart-card">
             <div class="chart-header">
-                <div class="chart-title">Page Views</div>
+                <div class="chart-title">Posts per Day</div>
                 <div class="chart-period">
                     <button class="period-btn active" onclick="setPeriod('7d', this)">7D</button>
                     <button class="period-btn" onclick="setPeriod('30d', this)">30D</button>
@@ -350,65 +350,72 @@
 
     </main>
 
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
     <script>
-        // === ANALYTICS ENGINE ===
-        // Uses localStorage + a shared JSON counter for cross-device tracking
+        // === FIREBASE SETUP ===
+        const firebaseConfig = {
+            apiKey: "AIzaSyDummy",
+            authDomain: "felt-that-cffe5.firebaseapp.com",
+            databaseURL: "https://felt-that-cffe5-default-rtdb.firebaseio.com",
+            projectId: "felt-that-cffe5",
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
 
         const COUNTER_API = 'https://api.counterapi.dev/v1/felt-that';
         const STORAGE_KEY = 'feltthat_analytics';
 
-        // Initialize analytics data
+        // Local analytics
         function getAnalytics() {
             const saved = localStorage.getItem(STORAGE_KEY);
-            return saved ? JSON.parse(saved) : {
-                visits: [],
-                posts: [],
-                dailyVisits: {}
-            };
+            return saved ? JSON.parse(saved) : { visits: [], posts: [], dailyVisits: {} };
         }
-
         function saveAnalytics(data) {
             localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
         }
-
-        // Record a visit
         function recordVisit() {
             const data = getAnalytics();
             const now = Date.now();
             data.visits.push(now);
             const today = new Date().toISOString().split('T')[0];
             data.dailyVisits[today] = (data.dailyVisits[today] || 0) + 1;
-
-            // Keep last 90 days
             const cutoff = now - (90 * 86400000);
             data.visits = data.visits.filter(t => t > cutoff);
-
             saveAnalytics(data);
-            updateRemoteCounter();
+            try { fetch(`${COUNTER_API}/visits/up`); } catch(e) {}
         }
-
-        // Record a post
-        function recordPost() {
-            const data = getAnalytics();
-            data.posts.push(Date.now());
-            saveAnalytics(data);
-        }
-
-        // Remote counter (for cross-device)
-        async function updateRemoteCounter() {
-            try {
-                await fetch(`${COUNTER_API}/visits/up`);
-            } catch(e) {}
-        }
-
         async function getRemoteCounter() {
             try {
                 const res = await fetch(`${COUNTER_API}/visits`);
                 const data = await res.json();
                 return data.count || 0;
-            } catch(e) {
-                return 0;
-            }
+            } catch(e) { return 0; }
+        }
+
+        // === FIREBASE LIVE DATA ===
+        let firebasePosts = [];
+        let firebaseUsers = new Set();
+
+        function loadFirebaseData() {
+            // Load all posts
+            db.ref('posts').orderByChild('timestamp').on('value', snap => {
+                firebasePosts = [];
+                const data = snap.val();
+                if (data) {
+                    Object.values(data).forEach(post => {
+                        firebasePosts.push(post);
+                        if (post.username) firebaseUsers.add(post.username);
+                        // Track commenters too
+                        if (post.comments) {
+                            Object.values(post.comments).forEach(c => {
+                                if (c.username) firebaseUsers.add(c.username);
+                            });
+                        }
+                    });
+                }
+                renderAll();
+            });
         }
 
         // === RENDERING ===
@@ -422,7 +429,14 @@
             renderChart();
         }
 
-        function renderStats(remoteCount) {
+        function renderAll() {
+            renderStats();
+            renderChart();
+            renderActivity();
+            renderUsers();
+        }
+
+        function renderStats() {
             const data = getAnalytics();
             const today = new Date().toISOString().split('T')[0];
             const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
@@ -430,50 +444,48 @@
             const todayCount = data.dailyVisits[today] || 0;
             const yesterdayCount = data.dailyVisits[yesterday] || 0;
 
-            // Use remote count for total, local for today
-            document.getElementById('totalVisits').textContent = remoteCount.toLocaleString();
+            // Firebase data
+            const totalPosts = firebasePosts.length;
+            const todayPosts = firebasePosts.filter(p => p.timestamp > Date.now() - 86400000).length;
+            const totalLikes = firebasePosts.reduce((sum, p) => sum + (p.likes || 0), 0);
+            const totalComments = firebasePosts.reduce((sum, p) => sum + (p.comments ? Object.keys(p.comments).length : 0), 0);
 
-            const totalLocal = data.visits.length;
+            document.getElementById('totalVisits').textContent = firebaseUsers.size.toLocaleString() || '0';
             document.getElementById('todayVisits').textContent = todayCount;
+            document.getElementById('uniqueUsers').textContent = firebaseUsers.size;
+            document.getElementById('totalPosts').textContent = totalPosts;
+            document.getElementById('totalLikes').textContent = totalLikes;
 
-            // Posts count from localStorage posts
-            const posts = JSON.parse(localStorage.getItem('feltthat_posts') || '[]');
-            document.getElementById('totalPosts').textContent = posts.length;
-
-            // Avg session (simulated from time between page loads)
+            // Avg session
             const recentVisits = data.visits.slice(-10);
             let avgMs = 0;
             if (recentVisits.length > 1) {
                 let diffs = [];
-                for (let i = 1; i < recentVisits.length; i++) {
-                    diffs.push(recentVisits[i] - recentVisits[i-1]);
-                }
+                for (let i = 1; i < recentVisits.length; i++) diffs.push(recentVisits[i] - recentVisits[i-1]);
                 avgMs = diffs.reduce((a,b) => a+b, 0) / diffs.length;
             }
-            if (avgMs < 60000) {
-                document.getElementById('avgSession').textContent = Math.round(avgMs/1000) + 's';
-            } else {
-                document.getElementById('avgSession').textContent = Math.round(avgMs/60000) + 'm';
-            }
+            document.getElementById('avgSession').textContent = avgMs < 60000 ? Math.round(avgMs/1000) + 's' : Math.round(avgMs/60000) + 'm';
 
             // Change indicators
             const todayChange = document.getElementById('todayChange');
-            if (yesterdayCount > 0) {
-                const pct = Math.round(((todayCount - yesterdayCount) / yesterdayCount) * 100);
-                todayChange.textContent = `${pct > 0 ? '+' : ''}${pct}% vs yesterday`;
-                todayChange.className = `stat-change ${pct >= 0 ? 'up' : 'down'}`;
-            } else {
-                todayChange.textContent = 'No data yesterday';
-                todayChange.className = 'stat-change';
-            }
+            todayChange.textContent = 'Dashboard view';
+            todayChange.className = 'stat-change';
 
             const totalChange = document.getElementById('totalChange');
-            totalChange.textContent = 'All time';
+            totalChange.textContent = 'From Firebase';
             totalChange.className = 'stat-change';
 
+            const usersChange = document.getElementById('usersChange');
+            usersChange.textContent = `${totalComments} comments`;
+            usersChange.className = 'stat-change';
+
             const postsChange = document.getElementById('postsChange');
-            postsChange.textContent = `${posts.filter(p => p.timestamp > Date.now() - 86400000).length} today`;
+            postsChange.textContent = `${todayPosts} today`;
             postsChange.className = 'stat-change';
+
+            const likesChange = document.getElementById('likesChange');
+            likesChange.textContent = `${todayPosts} today`;
+            likesChange.className = 'stat-change';
         }
 
         function renderChart() {
@@ -481,13 +493,19 @@
             const days = currentPeriod === '7d' ? 7 : 30;
             const chart = document.getElementById('barChart');
 
+            // Use Firebase posts for the chart — count posts per day
+            const postCounts = {};
+            firebasePosts.forEach(p => {
+                const d = new Date(p.timestamp).toISOString().split('T')[0];
+                postCounts[d] = (postCounts[d] || 0) + 1;
+            });
+
             let bars = [];
             for (let i = days - 1; i >= 0; i--) {
                 const date = new Date(Date.now() - (i * 86400000));
                 const key = date.toISOString().split('T')[0];
-                const count = data.dailyVisits[key] || 0;
+                const count = postCounts[key] || 0;
                 const label = date.toLocaleDateString('en-US', { weekday: 'short' });
-
                 bars.push({ label, count, date: key });
             }
 
@@ -506,48 +524,46 @@
         }
 
         function renderActivity() {
-            const data = getAnalytics();
             const feed = document.getElementById('activityFeed');
-            const posts = JSON.parse(localStorage.getItem('feltthat_posts') || '[]');
-            const recentPosts = posts.slice().sort((a,b) => b.timestamp - a.timestamp).slice(0, 5);
-            const recentVisits = data.visits.slice(-5).reverse();
-
             let items = [];
 
-            // Recent visits
-            recentVisits.forEach(v => {
-                items.push({
-                    time: v,
-                    text: '<strong>New visit</strong> to FELT THAT',
-                    type: 'visit'
-                });
-            });
-
-            // Recent posts
-            recentPosts.forEach(p => {
+            // Posts from Firebase
+            firebasePosts.slice().reverse().forEach(p => {
+                const content = (p.content || p.text || '').substring(0, 80);
                 items.push({
                     time: p.timestamp,
-                    text: `<strong>${p.username}</strong> posted in ${p.industry}`,
-                    type: 'post'
+                    text: `<strong>${p.username || 'Anonymous'}</strong>: ${content}${content.length >= 80 ? '...' : ''}`,
+                    type: 'post',
+                    likes: p.likes || 0,
+                    comments: p.comments ? Object.keys(p.comments).length : 0
                 });
             });
 
-            // Sort and show latest 8
+            // Sort by time
             items.sort((a,b) => b.time - a.time);
-            items = items.slice(0, 8);
+            items = items.slice(0, 10);
 
             if (items.length === 0) {
-                feed.innerHTML = '<div class="empty-notice"><strong>No activity yet.</strong><br>Visit the main site to start tracking.</div>';
+                feed.innerHTML = '<div class="empty-notice"><strong>No activity yet.</strong><br>Posts will appear here once users start venting.</div>';
                 return;
             }
 
             feed.innerHTML = items.map(item => `
                 <div class="activity-item">
                     <div class="activity-dot ${item.type === 'post' ? 'green' : ''}"></div>
-                    <div class="activity-text">${item.text}</div>
+                    <div class="activity-text">${item.text} <span style="color:#a3a3a3;font-size:12px;margin-left:6px">♥${item.likes} · 💬${item.comments}</span></div>
                     <div class="activity-time">${formatTime(item.time)}</div>
                 </div>
             `).join('');
+        }
+
+        function renderUsers() {
+            // Unique users from Firebase
+            const usersList = Array.from(firebaseUsers);
+            const usersEl = document.getElementById('usersList');
+            if (usersEl) {
+                usersEl.textContent = `${usersList.length} unique users: ${usersList.join(', ')}`;
+            }
         }
 
         function formatTime(ts) {
@@ -563,16 +579,9 @@
 
         // === INIT ===
         async function init() {
-            // Record this visit
             recordVisit();
-
-            // Get remote counter for total
             const remoteCount = await getRemoteCounter();
-
-            // Render everything
-            renderStats(remoteCount);
-            renderChart();
-            renderActivity();
+            loadFirebaseData();
         }
 
         init();

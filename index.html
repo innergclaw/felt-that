@@ -86,9 +86,8 @@
         .comment-username { font-weight: 600; font-size: 0.875rem; }
         .comment-time { font-size: 0.75rem; color: var(--text-muted); }
         .comment-actions { margin-left: auto; }
-        .delete-btn { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 0.6875rem; font-family: inherit; padding: 0.25rem 0.5rem; border-radius: 4px; transition: all 0.2s; }
-        .comment:hover .delete-btn { color: var(--danger); }
-        @media (max-width: 768px) { .delete-btn { color: var(--danger); } }
+        .delete-btn { background: rgba(239, 68, 68, 0.15); border: 1.5px solid var(--danger); color: var(--danger); cursor: pointer; font-size: 0.8rem; font-family: inherit; padding: 0.25rem 0.75rem; border-radius: 4px; transition: all 0.2s; font-weight: 700; }
+        .delete-btn:hover { background: var(--danger); color: white; transform: scale(1.05); }
         .comment-text { font-size: 0.875rem; color: var(--text-secondary); line-height: 1.5; }
         .comment-input-wrapper { display: flex; gap: 0.75rem; margin-top: 1rem; }
         .comment-input-wrapper input { flex: 1; background: var(--bg-tertiary); border: 1px solid var(--border); border-radius: 8px; padding: 0.625rem 1rem; color: var(--text-primary); font-family: inherit; font-size: 0.875rem; }
@@ -236,6 +235,10 @@
 
         const defaultEmojis = ['🚀','⚙️','📊','🎓','🏗️','🎯','💼','📱','🔧','🧪','📡','🎪','🏛️','🧬','⚡','🌟','🛸','🎭','🔬','🏗️'];
 
+        // Track which comment sections are open (survives re-renders)
+        const openComments = new Set();
+        let deleteTimerInterval = null;
+
         // === FIREBASE: LISTEN TO POSTS (REAL-TIME) ===
         function listenToPosts() {
             const cutoff = Date.now() - 86400000;
@@ -298,7 +301,7 @@
             const input = document.getElementById('comment-input-' + postId);
             const text = input.value.trim();
             if (!text) return;
-
+            openComments.add(postId); // Keep section open after posting
             db.ref('posts/' + postId + '/comments').push({
                 username: currentUser,
                 text: text,
@@ -306,26 +309,17 @@
             });
 
             input.value = '';
-            // Re-open comments after re-render
-            setTimeout(() => {
-                const section = document.getElementById('comments-' + postId);
-                if (section) section.classList.add('open');
-            }, 100);
         }
 
-        // === FIREBASE: DELETE COMMENT (90s window) ===
+        // === FIREBASE: DELETE COMMENT (45s window) ===
         function deleteComment(postId, commentId) {
             if (!currentUser) return;
             db.ref('posts/' + postId + '/comments/' + commentId).once('value', (snap) => {
                 const comment = snap.val();
                 if (!comment) return;
                 const elapsed = (Date.now() - comment.timestamp) / 1000;
-                if (comment.username !== currentUser || elapsed >= 90) return;
+                if (comment.username !== currentUser || elapsed >= 45) return;
                 db.ref('posts/' + postId + '/comments/' + commentId).remove();
-                setTimeout(() => {
-                    const section = document.getElementById('comments-' + postId);
-                    if (section) section.classList.add('open');
-                }, 100);
             });
         }
 
@@ -355,6 +349,8 @@
                 const commentsArr = post.comments ? Object.entries(post.comments).map(([cid, c]) => ({ cid, ...c })) : [];
                 const isLiked = post.likers && post.likers[currentUser];
                 const emoji = industryEmojis[post.industry] || '📂';
+                // Auto-open comments section if it was previously open
+                const wasOpen = openComments.has(post.id);
 
                 return `
                 <div class="post-card" data-id="${post.id}">
@@ -381,19 +377,17 @@
                             <span>${commentsArr.length}</span>
                         </button>
                     </div>
-                    <div class="comments-section" id="comments-${post.id}">
+                    <div class="comments-section ${wasOpen ? 'open' : ''}" id="comments-${post.id}">
                         ${commentsArr.map(c => {
                             const isOwn = c.username === currentUser;
-                            const elapsed = (Date.now() - c.timestamp) / 1000;
-                            const canDelete = isOwn && elapsed < 90;
                             return `
-                            <div class="comment">
+                            <div class="comment" data-comment-ts="${c.timestamp}" data-comment-user="${c.username}" data-post-id="${post.id}" data-comment-id="${c.cid}">
                                 <div class="avatar">${c.username.charAt(0).toUpperCase()}</div>
                                 <div class="comment-content">
                                     <div class="comment-header">
                                         <span class="comment-username">${c.username}</span>
                                         <span class="comment-time">${formatTime(c.timestamp)}</span>
-                                        ${canDelete ? `<span class="comment-actions"><button class="delete-btn" onclick="deleteComment('${post.id}','${c.cid}')">✕ delete</button></span>` : ''}
+                                        ${isOwn ? `<span class="comment-actions"><button class="delete-btn" data-delete-btn data-post-id="${post.id}" data-comment-id="${c.cid}" data-comment-ts="${c.timestamp}">✕ delete</button></span>` : ''}
                                     </div>
                                     <div class="comment-text">${c.text}</div>
                                 </div>
@@ -406,6 +400,13 @@
                     </div>
                 </div>`;
             }).join('');
+            // Restore open sections & wire delete buttons
+            restoreOpenComments();
+            startDeleteTimer();
+            // Wire delete button clicks
+            document.querySelectorAll('[data-delete-btn]').forEach(btn => {
+                btn.onclick = () => deleteComment(btn.dataset.postId, btn.dataset.commentId);
+            });
         }
 
         function updateCounts() {
@@ -441,7 +442,36 @@
         }
 
         function toggleComments(postId) {
-            document.getElementById('comments-' + postId).classList.toggle('open');
+            const section = document.getElementById('comments-' + postId);
+            if (openComments.has(postId)) {
+                openComments.delete(postId);
+                section.classList.remove('open');
+            } else {
+                openComments.add(postId);
+                section.classList.add('open');
+            }
+        }
+
+        // Restore open comment sections after re-render
+        function restoreOpenComments() {
+            openComments.forEach(postId => {
+                const section = document.getElementById('comments-' + postId);
+                if (section) section.classList.add('open');
+            });
+        }
+
+        // Live delete button management — hide ✕ after 45s, but keep comment visible
+        function startDeleteTimer() {
+            if (deleteTimerInterval) clearInterval(deleteTimerInterval);
+            deleteTimerInterval = setInterval(() => {
+                document.querySelectorAll('[data-delete-btn]').forEach(btn => {
+                    const ts = parseInt(btn.dataset.commentTs);
+                    const elapsed = (Date.now() - ts) / 1000;
+                    if (elapsed >= 45) {
+                        btn.style.display = 'none';
+                    }
+                });
+            }, 1000);
         }
 
         function selectIndustry(industry) {
