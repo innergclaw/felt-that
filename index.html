@@ -531,6 +531,17 @@
             font-size: 1rem;
         }
 
+        .industry-tab.add-tab{
+            background: transparent;
+            border: 1px dashed var(--text-muted);
+            color: var(--text-muted);
+        }
+
+        .industry-tab.add-tab:hover{
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
         /* Footer */
         .footer{
             text-align: center;
@@ -634,6 +645,7 @@
                 <div class="industry-tab" data-industry="realestate" onclick="selectIndustry('realestate')">🏠 Real Estate <span class="industry-tab-count" id="count-realestate">0</span></div>
                 <div class="industry-tab" data-industry="agency" onclick="selectIndustry('agency')">📢 Agency <span class="industry-tab-count" id="count-agency">0</span></div>
                 <div class="industry-tab" data-industry="other" onclick="selectIndustry('other')">📂 Other <span class="industry-tab-count" id="count-other">0</span></div>
+                <div class="industry-tab add-tab" onclick="addIndustry()">+ Add</div>
             </div>
         </div>
 
@@ -684,21 +696,84 @@
 
         // Industry emojis map
         const industryEmojis = {
-            all: '🌐',
-            tech: '💻',
-            creative: '🎨',
-            finance: '💰',
-            ecommerce: '🛒',
-            healthcare: '🏥',
-            food: '🍕',
-            realestate: '🏠',
-            agency: '📢',
-            other: '📂'
+            all: '🌐', tech: '💻', creative: '🎨', finance: '💰', ecommerce: '🛒',
+            healthcare: '🏥', food: '🍕', realestate: '🏠', agency: '📢', other: '📂'
         };
+
+        const defaultEmojis = ['🚀','⚙️','📊','🎓','🏗️','🎯','💼','📱','🔧','🧪','📡','🎪','🏛️','🧬','⚡','🌟','🛸','🎭','🔬','🏗️'];
+
+        // Load custom industries
+        function getCustomIndustries() {
+            return JSON.parse(localStorage.getItem('feltthat_industries') || '[]');
+        }
+
+        function saveCustomIndustries(industries) {
+            localStorage.setItem('feltthat_industries', JSON.stringify(industries));
+        }
+
+        // Add industry
+        function addIndustry() {
+            const name = prompt('Enter industry name:');
+            if (!name || !name.trim()) return;
+
+            const slug = name.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-');
+            const existing = getCustomIndustries();
+            if (existing.includes(slug)) {
+                // Just select it
+                selectIndustry(slug);
+                return;
+            }
+
+            existing.push(slug);
+            saveCustomIndustries(existing);
+
+            // Add tab to DOM
+            const tabs = document.getElementById('industryTabs');
+            const addBtn = tabs.querySelector('.add-tab');
+            const emoji = defaultEmojis[existing.length % defaultEmojis.length];
+            const tab = document.createElement('div');
+            tab.className = 'industry-tab';
+            tab.dataset.industry = slug;
+            tab.onclick = () => selectIndustry(slug);
+            tab.innerHTML = `${emoji} ${name.trim()} <span class="industry-tab-count" id="count-${slug}">0</span>`;
+            tabs.insertBefore(tab, addBtn);
+
+            // Update emoji map
+            industryEmojis[slug] = emoji;
+
+            // Save the display name
+            const names = JSON.parse(localStorage.getItem('feltthat_industry_names') || '{}');
+            names[slug] = name.trim();
+            localStorage.setItem('feltthat_industry_names', JSON.stringify(names));
+
+            selectIndustry(slug);
+            updateCounts();
+        }
+
+        // Rebuild tabs on load (includes custom industries)
+        function rebuildTabs() {
+            const custom = getCustomIndustries();
+            const names = JSON.parse(localStorage.getItem('feltthat_industry_names') || '{}');
+            const tabs = document.getElementById('industryTabs');
+            const addBtn = tabs.querySelector('.add-tab');
+
+            custom.forEach((slug, i) => {
+                if (tabs.querySelector(`[data-industry="${slug}"]`)) return;
+                const emoji = defaultEmojis[i % defaultEmojis.length];
+                industryEmojis[slug] = emoji;
+                const tab = document.createElement('div');
+                tab.className = 'industry-tab';
+                tab.dataset.industry = slug;
+                tab.onclick = () => selectIndustry(slug);
+                tab.innerHTML = `${emoji} ${names[slug] || slug} <span class="industry-tab-count" id="count-${slug}">0</span>`;
+                tabs.insertBefore(tab, addBtn);
+            });
+        }
 
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
             checkUsername();
+            rebuildTabs();
             loadPosts();
             setupEventListeners();
         });
