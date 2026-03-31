@@ -188,6 +188,17 @@
         </div>
     </main>
 
+    <!-- Password Gate -->
+    <div class="modal-overlay active" id="passwordGate">
+        <div class="modal">
+            <h2 class="modal-title">🔒 FELT THAT</h2>
+            <p class="modal-subtitle">This is a private community. Enter the password to enter.</p>
+            <input type="password" class="modal-input" id="passwordInput" placeholder="Enter password">
+            <p class="modal-hint" id="passwordError" style="color:var(--danger);display:none;">Wrong password. Try again.</p>
+            <button class="btn" onclick="checkPassword()">Enter</button>
+        </div>
+    </div>
+
     <div class="modal-overlay" id="usernameModal">
         <div class="modal">
             <h2 class="modal-title">FELT THAT</h2>
@@ -517,8 +528,34 @@
             document.getElementById('composerAvatar').textContent = currentUser.charAt(0).toUpperCase();
         }
 
-        // === INIT ===
-        document.addEventListener('DOMContentLoaded', () => {
+        // === PASSWORD GATE ===
+        const ACCESS_PASSWORD = 'felt2025';
+
+        function checkPassword() {
+            const input = document.getElementById('passwordInput').value;
+            if (input === ACCESS_PASSWORD) {
+                sessionStorage.setItem('feltthat_auth', '1');
+                document.getElementById('passwordGate').classList.remove('active');
+                document.getElementById('passwordError').style.display = 'none';
+                initApp();
+            } else {
+                document.getElementById('passwordError').style.display = 'block';
+                document.getElementById('passwordInput').value = '';
+            }
+        }
+
+        document.getElementById('passwordInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') checkPassword();
+        });
+
+        // Check if already authenticated this session
+        if (sessionStorage.getItem('feltthat_auth') === '1') {
+            document.getElementById('passwordGate').classList.remove('active');
+            initApp();
+        }
+
+        // === INIT (called after password) ===
+        function initApp() {
             checkUsername();
             rebuildTabs();
             listenToPosts();
@@ -533,9 +570,8 @@
                 if (e.key === 'Enter') setUsername();
             });
 
-            // Update expiry timers every minute
             setInterval(() => { renderPosts(); }, 60000);
-        });
+        }
 
         // Analytics ping
         try { fetch('https://api.counterapi.dev/v1/felt-that/visits/up'); } catch(e) {}
